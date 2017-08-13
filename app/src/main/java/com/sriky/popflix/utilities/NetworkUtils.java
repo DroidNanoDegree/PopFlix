@@ -21,8 +21,6 @@ public final class NetworkUtils {
 
     //images
     private static final String TMDA_IMAGE_BASE_URL = "http://image.tmdb.org/t/p";
-    private static final String PATH_IMAGE_PATH = "images";
-    private static final String PATH_IMAGE_SIZE = "w185";
 
     /**
      * Build and returns URL.
@@ -45,30 +43,22 @@ public final class NetworkUtils {
     /**
      * Builds and returns Uri from the supplied relative path.
      *
-     * @param relativePath - relative path location at TMDB.
-     * @return - complete query Uri to TMDB, where image size is w185.
+     * @param encodedRelativePath - encoded relative path location at TMDB.
+     * @param imageWidthPath - path that specifies the thumbnail width.
+     * @return complete query Uri to TMDB.
      */
-    public static Uri getURLForImageWithRelativePath(String relativePath){
+    public static Uri getURLForImageWithRelativePathAndSize(String encodedRelativePath, String imageWidthPath){
         Uri uri = Uri.parse(TMDA_IMAGE_BASE_URL).buildUpon()
-                .appendPath(PATH_IMAGE_SIZE)
-                .appendPath(relativePath)
-                .build();
-
-        return uri;
-    }
-
-    public static Uri getUriForMovieIDwithRelativePath(String movieId, String relativePath, String apiKey){
-        Uri uri = Uri.parse(TMDA_BASE_URL).buildUpon()
-                .appendPath(movieId)
-                .appendPath(PATH_IMAGE_PATH)
-                .appendQueryParameter(PARAM_QUERY_API_KEP, apiKey)
+                .appendPath(imageWidthPath)
+                .appendEncodedPath(encodedRelativePath)
                 .build();
 
         return uri;
     }
 
 
-    public static URL getURL(String path, String apiKey){
+    //helper method to build URL for the specified path.
+    private static URL getURL(String path, String apiKey){
         Uri uri = Uri.parse(TMDA_BASE_URL).buildUpon()
                 .appendPath(path)
                 .appendQueryParameter(PARAM_QUERY_API_KEP, apiKey)

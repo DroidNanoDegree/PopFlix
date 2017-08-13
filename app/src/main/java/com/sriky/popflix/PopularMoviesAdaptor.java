@@ -3,7 +3,6 @@ package com.sriky.popflix;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,8 +67,7 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
         void bind(int listIndex) {
             Context context = mMovieThumbNailView.getContext();
             String relativePath = mMoviesDataManager.getImageRelativePathAtIndex(listIndex);
-            Uri uri = NetworkUtils.getURLForImageWithRelativePath(relativePath);
-            Log.d(TAG, "bind: "+listIndex+", uri"+uri.toString());
+            Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, mMoviesDataManager.getThumbnailWidthPath());
             Picasso.with(context).load(uri).into(mMovieThumbNailView);
         }
     }

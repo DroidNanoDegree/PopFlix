@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 /**
  * Created by sriky on 8/11/17.
- * Represents movie information gathered from TMD API.
+ * Represents movie information gathered from TMDB API.
  */
 
 public class MovieData implements Parcelable {

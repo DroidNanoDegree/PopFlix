@@ -35,16 +35,19 @@ public class MoviesDataManager {
 
     private static final String TAG = MoviesDataManager.class.getSimpleName();
 
-    private static final String JSON_ARRAY_RESULTS = "results";
-    private static final String JSON_POSTER_PATH = "poster_path";
-    private static final String JSON_OVERVIEW = "overview";
-    private static final String JSON_VOTE_AVERAGE = "vote_average";
-    private static final String JSON_MOVIE_ID = "id";
+    //TMDB query - json keys.
+    private static final String JSON_KEY_ARRAY_RESULTS = "results";
+    private static final String JSON_KEY_POSTER_PATH = "poster_path";
+    private static final String JSON_KEY_OVERVIEW = "overview";
+    private static final String JSON_KEY_VOTE_AVERAGE = "vote_average";
+    private static final String JSON_KEY_MOVIE_ID = "id";
 
     //listener object
     private MovieDataChangedListener mMovieDataChangedListener;
-
+    //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList = new ArrayList<>();
+    //the Uri path that determine the width of the poster thumbnail.
+    private String mQueryThumbnailWidthPath;
 
     /**
      * Returns the instance.
@@ -54,23 +57,21 @@ public class MoviesDataManager {
     public static MoviesDataManager getInstance() { return mMoviesDataManagerInstance; }
 
     /**
-     * Sets the listener
+     * Initializes the MoviesDataManager and downloads the movie data from TMDB.
      *
-     * @param listener - will receive the following callbacks:
-     *     onDataLoadComplete() - upon successful download.
-     *     onDataLoadFailed(status) - when download fails with appreciate status.
+     * @param type - specify the supported type of ordering for the movies.
+     * @param api_key - TMDB API Key
+     * @param thumbnailWidth - desired width for the movie poster thumbnails.
+     * @param listener - where the callbacks should be routed to.
      */
-    public void setListener(MovieDataChangedListener listener) {
+    public void init(QueryType type, String api_key, int thumbnailWidth, MovieDataChangedListener listener){
+        //set the listener.
         mMovieDataChangedListener = listener;
-    }
 
-    /**
-     * Query TMD, ordering based on the type specified.
-     *
-     * @param type movies will be ordered on the type specified.
-     * @param api_key api_key to TMD.
-     */
-    public void loadMovieDataInBackground(QueryType type, String api_key){
+        //set the Uri path for the supported width.
+        calculateThumbnailSizeToDownload(thumbnailWidth);
+
+        //trigger the async task to download movie data.
         TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
         if(type == QueryType.POPULAR){
             tmdaQueryTask.execute(NetworkUtils.getURLForPopularMovies(api_key));
@@ -81,6 +82,7 @@ public class MoviesDataManager {
 
     /**
      * Gets the relative image path from TMDB for a specific index.
+     *
      * @param index of the image.
      * @return - relative path.
      */
@@ -88,6 +90,14 @@ public class MoviesDataManager {
         //TODO add error checks.
 
         return mMovieDataArrayList.get(index).getPosterPath();
+    }
+
+    /**
+     * The Uri path that specifies the width of the thumbnail to be downloaded.
+     * @return
+     */
+    public String getThumbnailWidthPath(){
+        return mQueryThumbnailWidthPath;
     }
 
     /**
@@ -104,10 +114,30 @@ public class MoviesDataManager {
 
     /**
      * Get the size of elements downloaded from TMDB.
-     * @return size of the elements.
+     *
+     * @return total number of the elements available to be displayed.
      */
     public int getNumberOfItems(){
         return mMovieDataArrayList.size();
+    }
+
+    /*
+     * Sets the width for the thumbnail to be downloaded to the supported sizes by TMDB.
+     */
+    private void calculateThumbnailSizeToDownload(int thumbnailWidth){
+        if(thumbnailWidth > 0 && thumbnailWidth <= 92){
+            mQueryThumbnailWidthPath = "w92";
+        }else if(thumbnailWidth > 92 && thumbnailWidth <= 154){
+            mQueryThumbnailWidthPath = "w154";
+        }else if(thumbnailWidth > 154 && thumbnailWidth <= 185){
+            mQueryThumbnailWidthPath = "w185";
+        }else if(thumbnailWidth > 185 && thumbnailWidth <= 342){
+            mQueryThumbnailWidthPath = "w342";
+        }else  if(thumbnailWidth > 342 && thumbnailWidth <= 500){
+            mQueryThumbnailWidthPath = "w500";
+        }else if(thumbnailWidth > 500){
+            mQueryThumbnailWidthPath = "w780";
+        }
     }
 
     /*
@@ -141,13 +171,13 @@ public class MoviesDataManager {
                 // TODO check response and process if response == 200.
                 try {
                     JSONObject moviesData = new JSONObject(queryResult);
-                    JSONArray jsonArrayResults = moviesData.getJSONArray(JSON_ARRAY_RESULTS);
+                    JSONArray jsonArrayResults = moviesData.getJSONArray(JSON_KEY_ARRAY_RESULTS);
                     if (jsonArrayResults != null) {
                         for (int i = 0; i < jsonArrayResults.length(); i++) {
                             JSONObject data = (JSONObject) jsonArrayResults.get(i);
-                            MovieData movieData = new MovieData(data.getString(JSON_POSTER_PATH),
-                                    data.getString(JSON_OVERVIEW), data.getString(JSON_VOTE_AVERAGE),
-                                    data.getString(JSON_MOVIE_ID));
+                            MovieData movieData = new MovieData(data.getString(JSON_KEY_POSTER_PATH),
+                                    data.getString(JSON_KEY_OVERVIEW), data.getString(JSON_KEY_VOTE_AVERAGE),
+                                    data.getString(JSON_KEY_MOVIE_ID));
                             mMovieDataArrayList.add(movieData);
                         }
                     }
