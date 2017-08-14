@@ -15,30 +15,10 @@ import java.util.Scanner;
 
 public final class NetworkUtils {
     private static final String TMDA_BASE_URL = "https://api.themoviedb.org/3/movie";
-    private static final String PATH_POPULAR_MOVIES = "popular";
-    private static final String PATH_TOP_MOVIES = "top_rated";
     private static final String PARAM_QUERY_API_KEP = "api_key";
 
     //images
     private static final String TMDA_IMAGE_BASE_URL = "http://image.tmdb.org/t/p";
-
-    /**
-     * Build and returns URL.
-     *
-     * @return URL to get Popular Movies.
-     */
-    public static URL getURLForPopularMovies(String apiKey){
-        return getURL(PATH_POPULAR_MOVIES, apiKey);
-    }
-
-    /**
-     * Build and returns URL for Top Rated Movies.
-     *
-     * @return URL to get Top Rated Movies.
-     */
-    public static URL getURLForTopRatedMovies(String apiKey){
-        return getURL(PATH_TOP_MOVIES, apiKey);
-    }
 
     /**
      * Builds and returns Uri from the supplied relative path.
@@ -56,11 +36,16 @@ public final class NetworkUtils {
         return uri;
     }
 
-
-    //helper method to build URL for the specified path.
-    private static URL getURL(String path, String apiKey){
+    /**
+     * Builds URL for the specified sorting order path from TMDB base URL.
+     *
+     * @param sortingOrderPath - query parameter for desired ordering of the movie.
+     * @param apiKey - API key for TMDB.
+     * @return URL to query TMBD to get movies in the order specified by sortingOrderPath param.
+     */
+    public static URL buildURL(String sortingOrderPath, String apiKey){
         Uri uri = Uri.parse(TMDA_BASE_URL).buildUpon()
-                .appendPath(path)
+                .appendPath(sortingOrderPath)
                 .appendQueryParameter(PARAM_QUERY_API_KEP, apiKey)
                 .build();
 

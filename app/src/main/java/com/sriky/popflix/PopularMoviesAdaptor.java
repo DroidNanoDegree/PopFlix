@@ -3,6 +3,7 @@ package com.sriky.popflix;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
     private int mNumberOfItems;
 
     public PopularMoviesAdaptor(int numberOfItems){
+        Log.d(TAG, "PopularMoviesAdaptor: numberOfItems = "+numberOfItems);
         mNumberOfItems = numberOfItems;
     }
 
@@ -50,9 +52,6 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
         //will display the image poster/thumbnail.
         ImageView mMovieThumbNailView;
 
-        //handle to MoviesDataManager
-        private final MoviesDataManager mMoviesDataManager = MoviesDataManager.getInstance();
-
         public ImageViewHolder(View itemView) {
             super(itemView);
 
@@ -65,10 +64,10 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
          * @param listIndex Position of the item in the list
          */
         void bind(int listIndex) {
-            Context context = mMovieThumbNailView.getContext();
-            String relativePath = mMoviesDataManager.getImageRelativePathAtIndex(listIndex);
-            Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, mMoviesDataManager.getThumbnailWidthPath());
-            Picasso.with(context).load(uri).into(mMovieThumbNailView);
+            PopularMoviesActivity popularMoviesActivity = (PopularMoviesActivity) mMovieThumbNailView.getContext();
+            String relativePath = popularMoviesActivity.getImageRelativePathAtIndex(listIndex);
+            Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, popularMoviesActivity.getThumbnailWidthPath());
+            Picasso.with(popularMoviesActivity).load(uri).into(mMovieThumbNailView);
         }
     }
 }

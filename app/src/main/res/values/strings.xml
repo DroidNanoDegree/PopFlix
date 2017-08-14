@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">PopFlix</string>
+    <string name="tmdb_api_key"></string>
+    <string name="sort_order_key">sort_order</string>
+    <string name="sort_order_popular">popular</string>
+    <string name="sort_order_top_rated">top_rated</string>
+    <string name="default_sort_order">@string/sort_order_popular</string>
+    <string name="data_download_error">Failed to get data! Please check the internet connection and try again.</string>
 </resources>
