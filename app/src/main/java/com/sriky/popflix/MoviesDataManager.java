@@ -43,7 +43,7 @@ public class MoviesDataManager {
     private static final String JSON_KEY_MOVIE_ID = "id";
 
     //listener object
-    private MovieDataChangedListener mMovieDataChangedListener;
+    private MovieDataListener mMovieDataListener;
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList = new ArrayList<>();
     //the Uri path that determine the width of the poster thumbnail.
@@ -64,9 +64,9 @@ public class MoviesDataManager {
      * @param thumbnailWidth - desired width for the movie poster thumbnails.
      * @param listener - where the callbacks should be routed to.
      */
-    public void init(QueryType type, String api_key, int thumbnailWidth, MovieDataChangedListener listener){
+    public void init(QueryType type, String api_key, int thumbnailWidth, MovieDataListener listener){
         //set the listener.
-        mMovieDataChangedListener = listener;
+        mMovieDataListener = listener;
 
         //set the Uri path for the supported width.
         calculateThumbnailSizeToDownload(thumbnailWidth);
@@ -143,7 +143,7 @@ public class MoviesDataManager {
     /*
      * Interface for the listener.
      */
-    interface MovieDataChangedListener {
+    interface MovieDataListener {
         //occurs when data is downloaded successfully.
         void onDataLoadComplete();
         //occurs when there was issues downloading data.
@@ -151,6 +151,10 @@ public class MoviesDataManager {
     }
 
     private class TMDAQueryTask extends AsyncTask<URL, Void, String>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
 
         @Override
         protected String doInBackground(URL... params) {
@@ -183,10 +187,12 @@ public class MoviesDataManager {
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    mMovieDataChangedListener.onDataLoadFailed(0);
+                    mMovieDataListener.onDataLoadFailed(0);
                 }
+            }else{
+                mMovieDataListener.onDataLoadFailed(0);
             }
-            mMovieDataChangedListener.onDataLoadComplete();
+            mMovieDataListener.onDataLoadComplete();
         }
     }
 }
