@@ -3,6 +3,7 @@ package com.sriky.popflix;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,10 +27,12 @@ import static android.R.attr.type;
 
 public class PopularMoviesActivity extends AppCompatActivity{
 
+    private static final String TAG = PopularMoviesActivity.class.getSimpleName();
+
     //number of columns in the grid.
     private static final int NUMBER_OF_GRID_COLUMNS = 4;
-
-    private static final String TAG = PopularMoviesActivity.class.getSimpleName();
+    //key for saving and retrieving data from savedInstanceState.
+    private static final String MOVIE_DATA_LIST_KEY = "movie_data_list";
 
     /*
      * Handles to the Adaptor and the RecyclerView to aid in reset the list when user toggles btw
@@ -45,6 +48,8 @@ public class PopularMoviesActivity extends AppCompatActivity{
     private ArrayList<MovieData> mMovieDataArrayList = new ArrayList<>();
     //the Uri path that determine the width of the poster thumbnail.
     private String mQueryThumbnailWidthPath;
+    //query parameter for sorting ordering.
+    private String mSortingOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,23 @@ public class PopularMoviesActivity extends AppCompatActivity{
         setupQueryThumbnailWidthPath();
 
         setupSharedPreferences();
+
+        //if saved data exists, then use the movie data that was already downloaded.
+        if( savedInstanceState != null && savedInstanceState.containsKey(MOVIE_DATA_LIST_KEY) ){
+            mMovieDataArrayList = savedInstanceState.getParcelableArrayList(MOVIE_DATA_LIST_KEY);
+            onDataLoadComplete();
+        }else{
+            //trigger the async task to download movie data.
+            TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
+            tmdaQueryTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState()");
+        outState.putParcelableArrayList(MOVIE_DATA_LIST_KEY, mMovieDataArrayList);
+        super.onSaveInstanceState(outState);
     }
 
     /**
@@ -77,14 +99,8 @@ public class PopularMoviesActivity extends AppCompatActivity{
 
     private void setupSharedPreferences(){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String apiKey = getString(R.string.tmdb_api_key);
-
-        String sortingOrder = sharedPreferences.getString(getString(R.string.sort_order_key), getString(R.string.default_sort_order));
-        Log.d(TAG, "setupSharedPreferences: sortingOrder = "+sortingOrder);
-
-        //trigger the async task to download movie data.
-        TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
-        tmdaQueryTask.execute(NetworkUtils.buildURL(sortingOrder, apiKey));
+        mSortingOrder = sharedPreferences.getString(getString(R.string.sort_order_key), getString(R.string.default_sort_order));
+        Log.d(TAG, "setupSharedPreferences: sortingOrder = "+mSortingOrder);
     }
 
     private void showProgressBarAndHideErrorMessage(){
@@ -96,8 +112,7 @@ public class PopularMoviesActivity extends AppCompatActivity{
         mProgressBar.setVisibility(View.INVISIBLE);
         mErrorMessageTextView.setVisibility(View.VISIBLE);
     }
-
-
+    
     private void onDataLoadComplete() {
         Log.d(TAG, "onDataLoadComplete()");
         mProgressBar.setVisibility(View.INVISIBLE);//hide the progress bar.
@@ -161,12 +176,14 @@ public class PopularMoviesActivity extends AppCompatActivity{
     private class TMDAQueryTask extends AsyncTask<URL, Void, String> {
         @Override
         protected void onPreExecute() {
+            Log.d(TAG, "onPreExecute()");
             showProgressBarAndHideErrorMessage();
         }
 
         @Override
         protected String doInBackground(URL... params) {
             URL url = params[0];
+            Log.d(TAG, "doInBackground: URL = "+url);
             String results = null;
             try{
                 results = NetworkUtils.getStringResponseFromHttpUrl(url);
@@ -181,7 +198,7 @@ public class PopularMoviesActivity extends AppCompatActivity{
             if(queryResult != null) {
                 Log.d(TAG, "onPostExecute: queryResult.length() = "+queryResult.length());
                 // TODO check response and process if response == 200.
-                mMovieDataArrayList = MovieDataHelper.getListfromJSONResponse(queryResult);
+                mMovieDataArrayList.addAll(MovieDataHelper.getListfromJSONResponse(queryResult));
             }else{
                 onDataLoadFailed(0);
             }
