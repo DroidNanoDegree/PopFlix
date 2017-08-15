@@ -1,9 +1,9 @@
 package com.sriky.popflix;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,21 +11,22 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Display;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.sriky.popflix.settings.SettingsActivity;
 import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.prefs.PreferenceChangeEvent;
 
-import static android.R.attr.type;
-
-public class PopularMoviesActivity extends AppCompatActivity{
+public class PopularMoviesActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
@@ -60,6 +61,11 @@ public class PopularMoviesActivity extends AppCompatActivity{
         mProgressBar = (ProgressBar) findViewById(R.id.pb_popularMoviesActivity);
         mErrorMessageTextView = (TextView) findViewById(R.id.tv_error_msg);
 
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(PopularMoviesActivity.this, NUMBER_OF_GRID_COLUMNS);
+        mMoviePostersRecyclerView.setLayoutManager(gridLayoutManager);
+
+        mMoviePostersRecyclerView.setHasFixedSize(true);
+
         showProgressBarAndHideErrorMessage();
 
         setupQueryThumbnailWidthPath();
@@ -68,12 +74,13 @@ public class PopularMoviesActivity extends AppCompatActivity{
 
         //if saved data exists, then use the movie data that was already downloaded.
         if( savedInstanceState != null && savedInstanceState.containsKey(MOVIE_DATA_LIST_KEY) ){
+            Log.d(TAG, "onCreate: loading data from savedInstanceState()");
             mMovieDataArrayList = savedInstanceState.getParcelableArrayList(MOVIE_DATA_LIST_KEY);
             onDataLoadComplete();
         }else{
+            Log.d(TAG, "onCreate: movie data must be downloaded!");
             //trigger the async task to download movie data.
-            TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
-            tmdaQueryTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
+            downloadMovieDataInBackground();
         }
     }
 
@@ -82,6 +89,50 @@ public class PopularMoviesActivity extends AppCompatActivity{
         Log.d(TAG, "onSaveInstanceState()");
         outState.putParcelableArrayList(MOVIE_DATA_LIST_KEY, mMovieDataArrayList);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.settings_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.action_settings){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(getString(R.string.sort_order_key))){
+            mSortingOrder = sharedPreferences.getString(key, getString(R.string.default_sort_order));
+            Log.d(TAG, "onSharedPreferenceChanged: mSortingOrder = "+mSortingOrder);
+            mMovieDataArrayList.clear();
+            downloadMovieDataInBackground();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy()");
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    /**
+     * Starts an AsyncTask to download data in the background.
+     */
+    private void downloadMovieDataInBackground(){
+        Log.d(TAG, "downloadMovieDataInBackground()");
+        TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
+        tmdaQueryTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
     }
 
     /**
@@ -101,6 +152,7 @@ public class PopularMoviesActivity extends AppCompatActivity{
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSortingOrder = sharedPreferences.getString(getString(R.string.sort_order_key), getString(R.string.default_sort_order));
         Log.d(TAG, "setupSharedPreferences: sortingOrder = "+mSortingOrder);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     private void showProgressBarAndHideErrorMessage(){
@@ -112,16 +164,10 @@ public class PopularMoviesActivity extends AppCompatActivity{
         mProgressBar.setVisibility(View.INVISIBLE);
         mErrorMessageTextView.setVisibility(View.VISIBLE);
     }
-    
+
     private void onDataLoadComplete() {
         Log.d(TAG, "onDataLoadComplete()");
         mProgressBar.setVisibility(View.INVISIBLE);//hide the progress bar.
-
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, NUMBER_OF_GRID_COLUMNS);
-        mMoviePostersRecyclerView.setLayoutManager(gridLayoutManager);
-
-        mMoviePostersRecyclerView.setHasFixedSize(true);
-
         mPopularMoviesAdaptor = new PopularMoviesAdaptor(getNumberOfItems());
         mMoviePostersRecyclerView.setAdapter(mPopularMoviesAdaptor);
     }
