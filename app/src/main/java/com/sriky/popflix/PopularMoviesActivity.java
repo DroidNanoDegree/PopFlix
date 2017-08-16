@@ -248,10 +248,10 @@ public class PopularMoviesActivity extends AppCompatActivity
                 Log.d(TAG, "onPostExecute: queryResult.length() = "+queryResult.length());
                 // TODO check response and process if response == 200.
                 mMovieDataArrayList.addAll(MovieDataHelper.getListfromJSONResponse(queryResult));
+                onDataLoadComplete();
             }else{
                 onDataLoadFailed(0);
             }
-            onDataLoadComplete();
         }
     }
 }

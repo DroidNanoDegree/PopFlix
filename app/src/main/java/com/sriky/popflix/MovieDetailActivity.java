@@ -140,6 +140,8 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
+            //hide the progress bar.
+            mProgressBar.setVisibility(View.INVISIBLE);
             if(result != null){
                 mMovieData = MovieDataHelper.getMovieDataFrom(result);
                 onDownloadSuccess();

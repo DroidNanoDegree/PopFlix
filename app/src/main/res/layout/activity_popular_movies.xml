@@ -22,7 +22,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/tv_error_msg"
         android:text="@string/data_download_error"
-        android:textSize="22sp"
         android:textColor="@color/colorText"
         android:padding="16dp"
         android:visibility="invisible"/>
