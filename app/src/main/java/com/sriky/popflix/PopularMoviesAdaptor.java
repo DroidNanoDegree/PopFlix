@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
 /**
@@ -73,7 +74,7 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
         void bind(int listIndex) {
             PopularMoviesActivity popularMoviesActivity = (PopularMoviesActivity) mMovieThumbNailView.getContext();
             String relativePath = popularMoviesActivity.getImageRelativePathAtIndex(listIndex);
-            Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, popularMoviesActivity.getThumbnailWidthPath());
+            Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, MovieDataHelper.getQueryThumbnailWidthPath());
             Picasso.with(popularMoviesActivity).load(uri).into(mMovieThumbNailView);
         }
 

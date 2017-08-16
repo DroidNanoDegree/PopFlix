@@ -4,10 +4,11 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
@@ -20,8 +21,6 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.net.URL;
@@ -58,6 +57,8 @@ public class MovieDetailActivity extends AppCompatActivity {
         mOverviewTextView = (TextView) findViewById(R.id.tv_overview);
         mRatingsBar = (RatingBar) findViewById(R.id.rb_ratings);
 
+        setMoviePosterImageHeigth();
+
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -83,6 +84,13 @@ public class MovieDetailActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
+    private void setMoviePosterImageHeigth(){
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        mMoviePosterImageView.getLayoutParams().height = size.y / 2;
+    }
+
     private void onDownloadSuccess(){
         //hide the progress bar.
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -90,25 +98,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         mErrorMessageTextView.setVisibility(View.INVISIBLE);
 
         String relativePath = mMovieData.getPosterPath();
-        Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, getThumbnailQueryPath());
+        Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, MovieDataHelper.getQueryThumbnailWidthPath());
         Picasso.with(this).load(uri).into(mMoviePosterImageView);
 
         mReleaseDateTextView.setText(mMovieData.getReleaseDate());
         mOverviewTextView.setText(mMovieData.getOverview());
         mMovieTitleTextView.setText(mMovieData.getTitle());
-        String rating = mMovieData.getVoteAverage();
-        Log.d(TAG, "onDownloadSuccess: rating = "+rating);
-        float ratings = Float.parseFloat(rating) / 2;
-        Log.d(TAG, "onDownloadSuccess: ratings F = "+ratings);
+        float ratings = Float.parseFloat(mMovieData.getVoteAverage()) / 2;
         mRatingsBar.setRating(ratings);
-    }
-
-    private String getThumbnailQueryPath(){
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int thumbnailWidth = size.x / 2;
-        return MovieDataHelper.getThumbnailQueryPath(thumbnailWidth);
     }
 
     @Override

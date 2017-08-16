@@ -48,8 +48,7 @@ public class PopularMoviesActivity extends AppCompatActivity
 
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList = new ArrayList<>();
-    //the Uri path that determine the width of the poster thumbnail.
-    private String mQueryThumbnailWidthPath;
+
     //query parameter for sorting ordering.
     private String mSortingOrder;
 
@@ -157,8 +156,7 @@ public class PopularMoviesActivity extends AppCompatActivity
         Point size = new Point();
         display.getSize(size);
         int thumbnailWidth = size.x / NUMBER_OF_GRID_COLUMNS;
-        mQueryThumbnailWidthPath = MovieDataHelper.getThumbnailQueryPath(thumbnailWidth);
-        Log.d(TAG, "setupQueryThumbnailWidthPath: width Path = "+mQueryThumbnailWidthPath);
+        MovieDataHelper.setThumbnailQueryPath(thumbnailWidth);
     }
 
     private void setupSharedPreferences(){
@@ -201,14 +199,6 @@ public class PopularMoviesActivity extends AppCompatActivity
         //TODO add error checks.
 
         return mMovieDataArrayList.get(index).getPosterPath();
-    }
-
-    /**
-     * The Uri path that specifies the width of the thumbnail to be downloaded.
-     * @return
-     */
-    public String getThumbnailWidthPath(){
-        return mQueryThumbnailWidthPath;
     }
 
     /**

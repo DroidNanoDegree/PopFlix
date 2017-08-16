@@ -29,32 +29,42 @@ public final class MovieDataHelper {
     private static final String JSON_KEY_MOVIE_TITLE = "title";
     private static final String JSON_KEY_MOVIE_RELEASE_DATE = "release_date";
 
+    //the Uri path that determine the width of the poster thumbnail.
+    private static String mQueryThumbnailWidthPath = "w185";//default.;
+
     /**
      * Returns the closest possible width query path supported by TMDB.
      *
      * @param thumbnailWidth - desired width to display movie posters.
      * @return query widthPath.
      */
-    public static String getThumbnailQueryPath(int thumbnailWidth){
+    public static void setThumbnailQueryPath(int thumbnailWidth){
         if(thumbnailWidth <= 0){
-            Log.w(TAG, "getThumbnailQueryPath: thumnailWidth = "+thumbnailWidth+" in incorrect, will use default w185!");
+            Log.w(TAG, "setThumbnailQueryPath: thumbnailWidth = "+thumbnailWidth+" in incorrect, will use default w185!");
         }
 
-        String widthPath = "w185";//default.
         if(thumbnailWidth > 0 && thumbnailWidth <= 92){
-            widthPath = "w92";
+            mQueryThumbnailWidthPath = "w92";
         }else if(thumbnailWidth > 92 && thumbnailWidth <= 154){
-            widthPath = "w154";
+            mQueryThumbnailWidthPath = "w154";
         }else if(thumbnailWidth > 154 && thumbnailWidth <= 185){
-            widthPath = "w185";
+            mQueryThumbnailWidthPath = "w185";
         }else if(thumbnailWidth > 185 && thumbnailWidth <= 342){
-            widthPath = "w342";
+            mQueryThumbnailWidthPath = "w342";
         }else  if(thumbnailWidth > 342 && thumbnailWidth <= 500){
-            widthPath = "w500";
+            mQueryThumbnailWidthPath = "w500";
         }else if(thumbnailWidth > 500){
-            widthPath = "w780";
+            mQueryThumbnailWidthPath = "w780";
         }
-        return widthPath;
+    }
+
+    /**
+     * The support width path calculated based on the width of the screen and number of gird columns.
+     *
+     * @return path to the query url that specifies the width supported by TMDB.
+     */
+    public static String getQueryThumbnailWidthPath(){
+        return mQueryThumbnailWidthPath;
     }
 
     public static MovieData getMovieDataFrom(String queryResult){
