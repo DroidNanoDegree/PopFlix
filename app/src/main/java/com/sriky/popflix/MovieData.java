@@ -21,12 +21,26 @@ public class MovieData implements Parcelable {
     //movie id.
     private String mMovieID;
 
-    public MovieData(String posterPath, String overview, String voteAverage, String movieID){
-        mPosterPath = posterPath;
-        mOverview = overview;
-        mVoteAverage = voteAverage;
-        mMovieID = movieID;
+    //movie title
+    private String mTitle;
+
+    //movie release date
+    private String mReleaseDate;
+
+    public MovieData(){
     }
+
+    public void setPosterPath(String posterPath) { mPosterPath = posterPath; }
+
+    public void setOverview(String overview) { mOverview = overview; }
+
+    public void setVoteAverage(String voteAverage) { mVoteAverage = voteAverage; }
+
+    public void setMovieID(String movieID) { mMovieID = movieID; }
+
+    public void setTitle(String title) { mTitle = title; }
+
+    public void setReleaseDate(String releaseDate) { mReleaseDate = releaseDate; }
 
     public String getPosterPath(){
         return mPosterPath;
@@ -40,17 +54,24 @@ public class MovieData implements Parcelable {
         return mVoteAverage;
     }
 
+    public String getTitle() { return mTitle; }
+
     public String getMovieID(){
         return mMovieID;
     }
 
-    public String toString() { return mPosterPath + "--" + mOverview + "--" + mVoteAverage + "--" + mMovieID; }
+    public String getReleaseDate() { return mReleaseDate; }
+
+    public String toString() { return mPosterPath + "--" + mMovieID + "--" + mOverview + "--"
+            + mVoteAverage + "--" + mTitle + "--" + mReleaseDate; }
 
     protected MovieData(Parcel in) {
         mPosterPath = in.readString();
+        mMovieID = in.readString();
         mOverview = in.readString();
         mVoteAverage = in.readString();
-        mMovieID = in.readString();
+        mTitle = in.readString();
+        mReleaseDate = in.readString();
     }
 
     public static final Creator<MovieData> CREATOR = new Creator<MovieData>() {
@@ -73,8 +94,10 @@ public class MovieData implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mPosterPath);
+        dest.writeString(mMovieID);
         dest.writeString(mOverview);
         dest.writeString(mVoteAverage);
-        dest.writeString(mMovieID);
+        dest.writeString(mTitle);
+        dest.writeString(mReleaseDate);
     }
 }

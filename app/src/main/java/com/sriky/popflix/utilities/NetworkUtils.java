@@ -37,15 +37,15 @@ public final class NetworkUtils {
     }
 
     /**
-     * Builds URL for the specified sorting order path from TMDB base URL.
+     * Builds URL for the specified path using TMDB base URL.
      *
-     * @param sortingOrderPath - query parameter for desired ordering of the movie.
+     * @param path - query parameter for desired ordering of the movie.
      * @param apiKey - API key for TMDB.
-     * @return URL to query TMBD to get movies in the order specified by sortingOrderPath param.
+     * @return URL to query TMBD to get movies in the order specified by path param.
      */
-    public static URL buildURL(String sortingOrderPath, String apiKey){
+    public static URL buildURL(String path, String apiKey){
         Uri uri = Uri.parse(TMDA_BASE_URL).buildUpon()
-                .appendPath(sortingOrderPath)
+                .appendPath(path)
                 .appendQueryParameter(PARAM_QUERY_API_KEP, apiKey)
                 .build();
 

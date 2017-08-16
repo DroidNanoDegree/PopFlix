@@ -5,5 +5,6 @@
         android:entries="@array/pref_sort_order_labels"
         android:entryValues="@array/pref_sort_order_values"
         android:key="@string/sort_order_key"
-        android:title="@string/pref_sort_order_label" />
+        android:title="@string/pref_sort_order_label"
+        android:textColor="@color/colorText"/>
 </PreferenceScreen>

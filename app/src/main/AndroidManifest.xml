@@ -14,11 +14,20 @@
         <activity android:name=".PopularMoviesActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".settings.SettingsActivity"
+        <activity
+            android:name=".settings.SettingsActivity"
             android:label="@string/action_settings"
+            android:parentActivityName=".PopularMoviesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".PopularMoviesActivity" />
+        </activity>
+        <activity android:name=".MovieDetailActivity"
+            android:label="@string/details_activity"
             android:parentActivityName=".PopularMoviesActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

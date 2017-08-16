@@ -1,6 +1,5 @@
 package com.sriky.popflix;
 
-import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,9 +22,12 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
     //total number of movie posters that will in the grid layout.
     private int mNumberOfItems;
 
-    public PopularMoviesAdaptor(int numberOfItems){
+    private MoviePosterOnClickEventListener PopularMoviesAdaptorOnClickListener;
+
+    public PopularMoviesAdaptor(int numberOfItems, MoviePosterOnClickEventListener moviePosterOnClickEventListener){
         Log.d(TAG, "PopularMoviesAdaptor: numberOfItems = "+numberOfItems);
         mNumberOfItems = numberOfItems;
+        PopularMoviesAdaptorOnClickListener = moviePosterOnClickEventListener;
     }
 
     @Override
@@ -47,7 +49,11 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
         return mNumberOfItems;
     }
 
-    class ImageViewHolder extends RecyclerView.ViewHolder {
+    interface MoviePosterOnClickEventListener {
+        void onClickedItemAt(int index);
+    }
+
+    class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         //will display the image poster/thumbnail.
         ImageView mMovieThumbNailView;
@@ -56,6 +62,7 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
             super(itemView);
 
             mMovieThumbNailView = (ImageView) itemView.findViewById(R.id.iv_movie_thumbnail);
+            mMovieThumbNailView.setOnClickListener(this);
         }
 
         /**
@@ -68,6 +75,12 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
             String relativePath = popularMoviesActivity.getImageRelativePathAtIndex(listIndex);
             Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, popularMoviesActivity.getThumbnailWidthPath());
             Picasso.with(popularMoviesActivity).load(uri).into(mMovieThumbNailView);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, "onClick()");
+            PopularMoviesAdaptorOnClickListener.onClickedItemAt(getAdapterPosition());
         }
     }
 }

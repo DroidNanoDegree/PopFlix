@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class PopularMoviesActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class PopularMoviesActivity extends AppCompatActivity
+        implements SharedPreferences.OnSharedPreferenceChangeListener, PopularMoviesAdaptor.MoviePosterOnClickEventListener {
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
@@ -118,6 +119,18 @@ public class PopularMoviesActivity extends AppCompatActivity implements SharedPr
         }
     }
 
+
+    @Override
+    public void onClickedItemAt(int index) {
+        Log.d(TAG, "onClickedItemAt: idx = "+index);
+        //TODO validate the index.
+
+        Intent intent = new Intent(this, MovieDetailActivity.class);
+        intent.putExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY,
+                mMovieDataArrayList.get(index).getMovieID());
+        startActivity(intent);
+    }
+
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy()");
@@ -168,7 +181,7 @@ public class PopularMoviesActivity extends AppCompatActivity implements SharedPr
     private void onDataLoadComplete() {
         Log.d(TAG, "onDataLoadComplete()");
         mProgressBar.setVisibility(View.INVISIBLE);//hide the progress bar.
-        mPopularMoviesAdaptor = new PopularMoviesAdaptor(getNumberOfItems());
+        mPopularMoviesAdaptor = new PopularMoviesAdaptor(getNumberOfItems(), this);
         mMoviePostersRecyclerView.setAdapter(mPopularMoviesAdaptor);
     }
 

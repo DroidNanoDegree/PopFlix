@@ -3,6 +3,7 @@
 
     <!-- activity titles -->
     <string name="action_settings">Settings</string>
+    <string name="details_activity">Details</string>
 
     <!-- keys -->
     <string name="tmdb_api_key"></string>
