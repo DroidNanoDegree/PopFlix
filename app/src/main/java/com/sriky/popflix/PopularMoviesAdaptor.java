@@ -13,7 +13,7 @@ import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
 /**
- * Created by sriky on 8/11/17.
+ * Adaptor for the PopularMoviesActivity's grid RecyclerView.
  */
 
 public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdaptor.ImageViewHolder> {
@@ -25,8 +25,8 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
 
     private MoviePosterOnClickEventListener PopularMoviesAdaptorOnClickListener;
 
-    public PopularMoviesAdaptor(int numberOfItems, MoviePosterOnClickEventListener moviePosterOnClickEventListener){
-        Log.d(TAG, "PopularMoviesAdaptor: numberOfItems = "+numberOfItems);
+    public PopularMoviesAdaptor(int numberOfItems, MoviePosterOnClickEventListener moviePosterOnClickEventListener) {
+        Log.d(TAG, "PopularMoviesAdaptor: numberOfItems = " + numberOfItems);
         mNumberOfItems = numberOfItems;
         PopularMoviesAdaptorOnClickListener = moviePosterOnClickEventListener;
     }
