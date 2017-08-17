@@ -11,9 +11,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 /**
- * Created by sriky on 8/14/17.
+ * Helper class to handle json parsing, setting the query path for movie thumbnails etc.
  */
-
 public final class MovieDataHelper {
 
     public static final String MOVIE_ID_INTENT_EXTRA_KEY = "movie_id";
@@ -30,7 +29,7 @@ public final class MovieDataHelper {
     private static final String JSON_KEY_MOVIE_RELEASE_DATE = "release_date";
 
     //the Uri path that determine the width of the poster thumbnail.
-    private static String mQueryThumbnailWidthPath = "w185";//default.;
+    private static String sQueryThumbnailWidthPath = "w185";//default.;
 
     /**
      * Returns the closest possible width query path supported by TMDB.
@@ -38,23 +37,23 @@ public final class MovieDataHelper {
      * @param thumbnailWidth - desired width to display movie posters.
      * @return query widthPath.
      */
-    public static void setThumbnailQueryPath(int thumbnailWidth){
-        if(thumbnailWidth <= 0){
-            Log.w(TAG, "setThumbnailQueryPath: thumbnailWidth = "+thumbnailWidth+" in incorrect, will use default w185!");
+    public static void setThumbnailQueryPath(int thumbnailWidth) {
+        if (thumbnailWidth <= 0) {
+            Log.w(TAG, "setThumbnailQueryPath: thumbnailWidth = " + thumbnailWidth + " in incorrect, will use default w185!");
         }
 
-        if(thumbnailWidth > 0 && thumbnailWidth <= 92){
-            mQueryThumbnailWidthPath = "w92";
-        }else if(thumbnailWidth > 92 && thumbnailWidth <= 154){
-            mQueryThumbnailWidthPath = "w154";
-        }else if(thumbnailWidth > 154 && thumbnailWidth <= 185){
-            mQueryThumbnailWidthPath = "w185";
-        }else if(thumbnailWidth > 185 && thumbnailWidth <= 342){
-            mQueryThumbnailWidthPath = "w342";
-        }else  if(thumbnailWidth > 342 && thumbnailWidth <= 500){
-            mQueryThumbnailWidthPath = "w500";
-        }else if(thumbnailWidth > 500){
-            mQueryThumbnailWidthPath = "w780";
+        if (thumbnailWidth > 0 && thumbnailWidth <= 92) {
+            sQueryThumbnailWidthPath = "w92";
+        } else if (thumbnailWidth > 92 && thumbnailWidth <= 154) {
+            sQueryThumbnailWidthPath = "w154";
+        } else if (thumbnailWidth > 154 && thumbnailWidth <= 185) {
+            sQueryThumbnailWidthPath = "w185";
+        } else if (thumbnailWidth > 185 && thumbnailWidth <= 342) {
+            sQueryThumbnailWidthPath = "w342";
+        } else if (thumbnailWidth > 342 && thumbnailWidth <= 500) {
+            sQueryThumbnailWidthPath = "w500";
+        } else if (thumbnailWidth > 500) {
+            sQueryThumbnailWidthPath = "w780";
         }
     }
 
@@ -63,26 +62,41 @@ public final class MovieDataHelper {
      *
      * @return path to the query url that specifies the width supported by TMDB.
      */
-    public static String getQueryThumbnailWidthPath(){
-        return mQueryThumbnailWidthPath;
+    public static String getQueryThumbnailWidthPath() {
+        return sQueryThumbnailWidthPath;
     }
 
-    public static MovieData getMovieDataFrom(String queryResult){
+    /**
+     * This method will generate a MovieData object from the response json after querying TMDB API
+     * for a particular movie's details.
+     *
+     * @param queryResult movie details response from TMDB API for a particular movie.
+     * @return
+     */
+    public static MovieData getMovieDataFrom(String queryResult) {
         MovieData movieData = new MovieData();
         try {
             JSONObject movieDetails = new JSONObject(queryResult);
-            movieData.setPosterPath( movieDetails.getString(JSON_KEY_MOVIE_POSTER_PATH) );
-            movieData.setOverview( movieDetails.getString(JSON_KEY_MOVIE_OVERVIEW) );
-            movieData.setTitle( movieDetails.getString(JSON_KEY_MOVIE_TITLE) );
-            movieData.setReleaseDate( movieDetails.getString(JSON_KEY_MOVIE_RELEASE_DATE) );
-            movieData.setVoteAverage( movieDetails.getString(JSON_KEY_MOVIE_VOTE_AVERAGE) );
+            movieData.setPosterPath(movieDetails.getString(JSON_KEY_MOVIE_POSTER_PATH));
+            movieData.setOverview(movieDetails.getString(JSON_KEY_MOVIE_OVERVIEW));
+            movieData.setTitle(movieDetails.getString(JSON_KEY_MOVIE_TITLE));
+            movieData.setReleaseDate(movieDetails.getString(JSON_KEY_MOVIE_RELEASE_DATE));
+            movieData.setVoteAverage(movieDetails.getString(JSON_KEY_MOVIE_VOTE_AVERAGE));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return movieData;
     }
 
-    public static ArrayList<MovieData> getListfromJSONResponse(String queryResult){
+    /**
+     * Generates a list of MovieData objects from the response json, after querying TMDB API
+     * for movies organised in a specific order(eg: "popular" or "top_rated".
+     *
+     * @param queryResult response json, after querying TMDB API
+     *                    for movies organised in a specific order(eg: "popular" or "top_rated".
+     * @return ArrayList of MovieData objects.
+     */
+    public static ArrayList<MovieData> getListfromJSONResponse(String queryResult) {
         ArrayList<MovieData> movieDataList = new ArrayList<>();
         try {
             JSONObject moviesData = new JSONObject(queryResult);
@@ -91,8 +105,8 @@ public final class MovieDataHelper {
                 for (int i = 0; i < jsonArrayResults.length(); i++) {
                     JSONObject data = (JSONObject) jsonArrayResults.get(i);
                     MovieData movieData = new MovieData();
-                    movieData.setPosterPath( data.getString(JSON_KEY_MOVIE_POSTER_PATH) );
-                    movieData.setMovieID( data.getString(JSON_KEY_MOVIE_ID) );
+                    movieData.setPosterPath(data.getString(JSON_KEY_MOVIE_POSTER_PATH));
+                    movieData.setMovieID(data.getString(JSON_KEY_MOVIE_ID));
                     movieDataList.add(movieData);
                 }
             }
