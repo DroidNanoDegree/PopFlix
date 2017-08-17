@@ -10,9 +10,8 @@ import java.net.URL;
 import java.util.Scanner;
 
 /**
- * Created by sriky on 8/11/17.
+ * Helper class(static) to assist in generating URLs and performing API requests.
  */
-
 public final class NetworkUtils {
     private static final String TMDA_BASE_URL = "https://api.themoviedb.org/3/movie";
     private static final String PARAM_QUERY_API_KEP = "api_key";
@@ -24,10 +23,10 @@ public final class NetworkUtils {
      * Builds and returns Uri from the supplied relative path.
      *
      * @param encodedRelativePath - encoded relative path location at TMDB.
-     * @param imageWidthPath - path that specifies the thumbnail width.
+     * @param imageWidthPath      - path that specifies the thumbnail width.
      * @return complete query Uri to TMDB.
      */
-    public static Uri getURLForImageWithRelativePathAndSize(String encodedRelativePath, String imageWidthPath){
+    public static Uri getURLForImageWithRelativePathAndSize(String encodedRelativePath, String imageWidthPath) {
         Uri uri = Uri.parse(TMDA_IMAGE_BASE_URL).buildUpon()
                 .appendPath(imageWidthPath)
                 .appendEncodedPath(encodedRelativePath)
@@ -39,18 +38,18 @@ public final class NetworkUtils {
     /**
      * Builds URL for the specified path using TMDB base URL.
      *
-     * @param path - query parameter for desired ordering of the movie.
+     * @param path   - query parameter for desired ordering of the movie.
      * @param apiKey - API key for TMDB.
      * @return URL to query TMBD to get movies in the order specified by path param.
      */
-    public static URL buildURL(String path, String apiKey){
+    public static URL buildURL(String path, String apiKey) {
         Uri uri = Uri.parse(TMDA_BASE_URL).buildUpon()
                 .appendPath(path)
                 .appendQueryParameter(PARAM_QUERY_API_KEP, apiKey)
                 .build();
 
         URL url = null;
-        try{
+        try {
             url = new URL(uri.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
