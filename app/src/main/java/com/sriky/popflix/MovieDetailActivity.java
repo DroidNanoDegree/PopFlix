@@ -4,12 +4,10 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.constraint.ConstraintLayout;
+import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
@@ -50,7 +48,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         mProgressBar = (ProgressBar) findViewById(R.id.pb_details_activity);
         mErrorMessageTextView = (TextView) findViewById(R.id.tv_details_activity_error_msg);
-        mErrorMessageTextView.setText( getString(R.string.data_download_error) );
+        mErrorMessageTextView.setText(getString(R.string.data_download_error));
 
         mMoviePosterImageView = (ImageView) findViewById(R.id.iv_details_thumbnail);
         mMovieTitleTextView = (TextView) findViewById(R.id.tv_movie_title);
@@ -61,14 +59,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         setMoviePosterImageHeigth();
 
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null){
+        if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        if(savedInstanceState != null && savedInstanceState.containsKey(PARCEL_KEY)){
+        if (savedInstanceState != null && savedInstanceState.containsKey(PARCEL_KEY)) {
             mMovieData = savedInstanceState.getParcelable(PARCEL_KEY);
             onDownloadSuccess();
-        }else {
+        } else {
             Intent intent = getIntent();
             if (intent != null && intent.hasExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY)) {
                 String movieID = intent.getStringExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY);
@@ -85,14 +83,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
-    private void setMoviePosterImageHeigth(){
+    private void setMoviePosterImageHeigth() {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         mMoviePosterImageView.getLayoutParams().height = size.y / 2;
     }
 
-    private void onDownloadSuccess(){
+    private void onDownloadSuccess() {
         //hide the progress bar.
         mProgressBar.setVisibility(View.INVISIBLE);
         //hide error msg tv.
@@ -105,8 +103,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         mReleaseDateTextView.setText(mMovieData.getReleaseDate());
         mOverviewTextView.setText(mMovieData.getOverview());
         mMovieTitleTextView.setText(mMovieData.getTitle());
-        float ratings = Float.parseFloat(mMovieData.getVoteAverage()) / 2;
-        mRatingsBar.setRating(ratings);
+        try {
+            float ratings = Float.parseFloat(mMovieData.getVoteAverage()) / 2;
+            mRatingsBar.setRating(ratings);
+        } catch (NumberFormatException e) {
+            //hide the ratings bar if there was an exception.
+            mRatingsBar.setVisibility(View.INVISIBLE);
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -117,7 +121,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class QueryMovieDetailsTask extends AsyncTask<URL, Void, String>{
+    private class QueryMovieDetailsTask extends AsyncTask<URL, Void, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -128,9 +132,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(URL... params) {
             URL url = params[0];
-            Log.d(TAG, "doInBackground: Querying URL = "+url);
+            Log.d(TAG, "doInBackground: Querying URL = " + url);
             String result = null;
-            try{
+            try {
                 result = NetworkUtils.getStringResponseFromHttpUrl(url);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -142,10 +146,10 @@ public class MovieDetailActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             //hide the progress bar.
             mProgressBar.setVisibility(View.INVISIBLE);
-            if(result != null){
+            if (result != null) {
                 mMovieData = MovieDataHelper.getMovieDataFrom(result);
                 onDownloadSuccess();
-            }else{
+            } else {
                 mErrorMessageTextView.setVisibility(View.VISIBLE);
             }
         }
