@@ -46,17 +46,17 @@ public class MovieDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.pb_details_activity);
-        mErrorMessageTextView = (TextView) findViewById(R.id.tv_details_activity_error_msg);
+        mProgressBar = findViewById(R.id.pb_details_activity);
+        mErrorMessageTextView = findViewById(R.id.tv_details_activity_error_msg);
         mErrorMessageTextView.setText(getString(R.string.data_download_error));
 
-        mMoviePosterImageView = (ImageView) findViewById(R.id.iv_details_thumbnail);
-        mMovieTitleTextView = (TextView) findViewById(R.id.tv_movie_title);
-        mReleaseDateTextView = (TextView) findViewById(R.id.tv_release_date);
-        mOverviewTextView = (TextView) findViewById(R.id.tv_overview);
-        mRatingsBar = (RatingBar) findViewById(R.id.rb_ratings);
+        mMoviePosterImageView = findViewById(R.id.iv_details_thumbnail);
+        mMovieTitleTextView = findViewById(R.id.tv_movie_title);
+        mReleaseDateTextView =  findViewById(R.id.tv_release_date);
+        mOverviewTextView =  findViewById(R.id.tv_overview);
+        mRatingsBar = findViewById(R.id.rb_ratings);
 
-        setMoviePosterImageHeigth();
+        setMoviePosterImageHeight();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -83,13 +83,19 @@ public class MovieDetailActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
-    private void setMoviePosterImageHeigth() {
+    /**
+     * Sets the height of the imageview for the movie poster thumbnail to half of the screen height.
+     */
+    private void setMoviePosterImageHeight() {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         mMoviePosterImageView.getLayoutParams().height = size.y / 2;
     }
 
+    /**
+     * Method to set appreciate data to all the views once data was downloaded successfully.
+     */
     private void onDownloadSuccess() {
         //hide the progress bar.
         mProgressBar.setVisibility(View.INVISIBLE);
