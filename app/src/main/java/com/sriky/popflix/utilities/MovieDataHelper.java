@@ -27,6 +27,8 @@ public final class MovieDataHelper {
     private static final String JSON_KEY_MOVIE_ID = "id";
     private static final String JSON_KEY_MOVIE_TITLE = "title";
     private static final String JSON_KEY_MOVIE_RELEASE_DATE = "release_date";
+    private static final String JSON_KEY_STATUS_MESSAGE = "status_message";
+    private static final String JSON_KEY_STATUS_CODE = "status_code";
 
     //the Uri path that determine the width of the poster thumbnail.
     private static String sQueryThumbnailWidthPath = "w185";//default.;
@@ -76,12 +78,15 @@ public final class MovieDataHelper {
     public static MovieData getMovieDataFrom(String queryResult) {
         MovieData movieData = new MovieData();
         try {
-            JSONObject movieDetails = new JSONObject(queryResult);
-            movieData.setPosterPath(movieDetails.getString(JSON_KEY_MOVIE_POSTER_PATH));
-            movieData.setOverview(movieDetails.getString(JSON_KEY_MOVIE_OVERVIEW));
-            movieData.setTitle(movieDetails.getString(JSON_KEY_MOVIE_TITLE));
-            movieData.setReleaseDate(movieDetails.getString(JSON_KEY_MOVIE_RELEASE_DATE));
-            movieData.setVoteAverage(movieDetails.getString(JSON_KEY_MOVIE_VOTE_AVERAGE));
+            //validate the response from the server.
+            if(isResponseValid(queryResult)) {
+                JSONObject movieDetails = new JSONObject(queryResult);
+                movieData.setPosterPath(movieDetails.getString(JSON_KEY_MOVIE_POSTER_PATH));
+                movieData.setOverview(movieDetails.getString(JSON_KEY_MOVIE_OVERVIEW));
+                movieData.setTitle(movieDetails.getString(JSON_KEY_MOVIE_TITLE));
+                movieData.setReleaseDate(movieDetails.getString(JSON_KEY_MOVIE_RELEASE_DATE));
+                movieData.setVoteAverage(movieDetails.getString(JSON_KEY_MOVIE_VOTE_AVERAGE));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -99,20 +104,41 @@ public final class MovieDataHelper {
     public static ArrayList<MovieData> getListfromJSONResponse(String queryResult) {
         ArrayList<MovieData> movieDataList = new ArrayList<>();
         try {
-            JSONObject moviesData = new JSONObject(queryResult);
-            JSONArray jsonArrayResults = moviesData.getJSONArray(JSON_KEY_ARRAY_RESULTS);
-            if (jsonArrayResults != null) {
-                for (int i = 0; i < jsonArrayResults.length(); i++) {
-                    JSONObject data = (JSONObject) jsonArrayResults.get(i);
-                    MovieData movieData = new MovieData();
-                    movieData.setPosterPath(data.getString(JSON_KEY_MOVIE_POSTER_PATH));
-                    movieData.setMovieID(data.getString(JSON_KEY_MOVIE_ID));
-                    movieDataList.add(movieData);
+            //validate the response from the server.
+            if(isResponseValid(queryResult)) {
+                JSONObject moviesData = new JSONObject(queryResult);
+                JSONArray jsonArrayResults = moviesData.getJSONArray(JSON_KEY_ARRAY_RESULTS);
+                if (jsonArrayResults != null) {
+                    for (int i = 0; i < jsonArrayResults.length(); i++) {
+                        JSONObject data = (JSONObject) jsonArrayResults.get(i);
+                        MovieData movieData = new MovieData();
+                        movieData.setPosterPath(data.getString(JSON_KEY_MOVIE_POSTER_PATH));
+                        movieData.setMovieID(data.getString(JSON_KEY_MOVIE_ID));
+                        movieDataList.add(movieData);
+                    }
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return movieDataList;
+    }
+
+    /**
+     * Validates the response from the TMDB server.
+     * @param response Query response String.
+     * @return TRUE if there were no errors contained in the response.
+     * @throws JSONException
+     */
+    private static boolean isResponseValid(String response) throws JSONException {
+        if((response.contains(JSON_KEY_STATUS_CODE)) ||
+                (response.contains(JSON_KEY_STATUS_MESSAGE))){
+            JSONObject responseObject = new JSONObject(response);
+            String statusCode = responseObject.getString(JSON_KEY_STATUS_CODE);
+            String statusMsg = responseObject.getString(JSON_KEY_STATUS_MESSAGE);
+            Log.e(TAG, "isResponseValid: Bad Response from server, where status code = "+statusCode+", status message = "+statusMsg);
+            return false;
+        }
+        return true;
     }
 }
