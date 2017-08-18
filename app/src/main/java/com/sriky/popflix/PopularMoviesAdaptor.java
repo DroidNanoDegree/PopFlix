@@ -12,6 +12,9 @@ import com.squareup.picasso.Picasso;
 import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Adaptor for the PopularMoviesActivity's grid RecyclerView.
  */
@@ -57,12 +60,11 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
     class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         //will display the image poster/thumbnail.
-        ImageView mMovieThumbNailView;
+        public @BindView(R.id.iv_movie_thumbnail) ImageView mMovieThumbNailView;
 
         public ImageViewHolder(View itemView) {
             super(itemView);
-
-            mMovieThumbNailView = (ImageView) itemView.findViewById(R.id.iv_movie_thumbnail);
+            ButterKnife.bind(this, itemView);
             mMovieThumbNailView.setOnClickListener(this);
         }
 

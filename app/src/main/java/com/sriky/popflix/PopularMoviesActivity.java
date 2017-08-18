@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Main Activity that is launched from the Launcher.
  * Responsible for querying TMDB's APIs and displaying movies in the specified order.
@@ -45,10 +48,10 @@ public class PopularMoviesActivity extends AppCompatActivity
      * most_popular and top_rated movies from the settings menu.
      */
     private PopularMoviesAdaptor mPopularMoviesAdaptor;
-    private RecyclerView mMoviePostersRecyclerView;
+    public @BindView(R.id.rv_posters) RecyclerView mMoviePostersRecyclerView;
 
-    private ProgressBar mProgressBar;
-    private TextView mErrorMessageTextView;
+    public @BindView(R.id.pb_popularMoviesActivity) ProgressBar mProgressBar;
+    public @BindView(R.id.tv_error_msg) TextView mErrorMessageTextView;
 
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList;
@@ -60,10 +63,7 @@ public class PopularMoviesActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popular_movies);
-
-        mMoviePostersRecyclerView = findViewById(R.id.rv_posters);
-        mProgressBar = findViewById(R.id.pb_popularMoviesActivity);
-        mErrorMessageTextView = findViewById(R.id.tv_error_msg);
+        ButterKnife.bind(this);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(PopularMoviesActivity.this, NUMBER_OF_GRID_COLUMNS);
         mMoviePostersRecyclerView.setLayoutManager(gridLayoutManager);

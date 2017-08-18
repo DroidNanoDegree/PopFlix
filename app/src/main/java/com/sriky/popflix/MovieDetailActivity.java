@@ -24,19 +24,22 @@ import com.sriky.popflix.utilities.NetworkUtils;
 import java.io.IOException;
 import java.net.URL;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MovieDetailActivity extends AppCompatActivity {
 
     private static final String TAG = MovieDetailActivity.class.getSimpleName();
     private static final String PARCEL_KEY = "movie_data";
 
-    private ProgressBar mProgressBar;
-    private TextView mErrorMessageTextView;
+    public @BindView(R.id.pb_details_activity) ProgressBar mProgressBar;
+    public @BindView(R.id.tv_details_activity_error_msg) TextView mErrorMessageTextView;
 
-    private ImageView mMoviePosterImageView;
-    private TextView mMovieTitleTextView;
-    private TextView mReleaseDateTextView;
-    private TextView mOverviewTextView;
-    private RatingBar mRatingsBar;
+    public @BindView(R.id.iv_details_thumbnail) ImageView mMoviePosterImageView;
+    public @BindView(R.id.tv_movie_title) TextView mMovieTitleTextView;
+    public @BindView(R.id.tv_release_date) TextView mReleaseDateTextView;
+    public @BindView(R.id.tv_overview) TextView mOverviewTextView;
+    public @BindView(R.id.rb_ratings) RatingBar mRatingsBar;
 
     private MovieData mMovieData;
 
@@ -45,16 +48,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
+        ButterKnife.bind(this);
 
-        mProgressBar = findViewById(R.id.pb_details_activity);
-        mErrorMessageTextView = findViewById(R.id.tv_details_activity_error_msg);
         mErrorMessageTextView.setText(getString(R.string.data_download_error));
-
-        mMoviePosterImageView = findViewById(R.id.iv_details_thumbnail);
-        mMovieTitleTextView = findViewById(R.id.tv_movie_title);
-        mReleaseDateTextView =  findViewById(R.id.tv_release_date);
-        mOverviewTextView =  findViewById(R.id.tv_overview);
-        mRatingsBar = findViewById(R.id.rb_ratings);
 
         setMoviePosterImageHeight();
 
