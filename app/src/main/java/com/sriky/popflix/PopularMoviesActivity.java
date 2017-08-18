@@ -3,7 +3,6 @@ package com.sriky.popflix;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -22,9 +21,8 @@ import com.sriky.popflix.settings.SettingsActivity;
 import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,7 +32,9 @@ import butterknife.ButterKnife;
  * Responsible for querying TMDB's APIs and displaying movies in the specified order.
  */
 public class PopularMoviesActivity extends AppCompatActivity
-        implements SharedPreferences.OnSharedPreferenceChangeListener, PopularMoviesAdaptor.MoviePosterOnClickEventListener {
+        implements SharedPreferences.OnSharedPreferenceChangeListener,
+        PopularMoviesAdaptor.MoviePosterOnClickEventListener,
+        FetchMovieDataTask.FetchBasicMovieDataTaskListener {
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
@@ -144,13 +144,30 @@ public class PopularMoviesActivity extends AppCompatActivity
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    @Override
+    public void onPreExecute() {
+        showProgressBarAndHideErrorMessage();
+    }
+
+    @Override
+    public void onFetchSuccess(List<MovieData> movieDataList) {
+        mMovieDataArrayList.addAll(movieDataList);
+        onDataLoadComplete();
+    }
+
+    @Override
+    public void onFetchFailed() {
+        hideProgressBarAndShowErrorMessage();
+        onDataLoadFailed();
+    }
+
     /**
      * Starts an AsyncTask to download data in the background.
      */
     private void downloadMovieDataInBackground() {
         Log.d(TAG, "downloadMovieDataInBackground()");
-        TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
-        tmdaQueryTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
+        FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
+        fetchMovieDataTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
     }
 
     /**
@@ -208,12 +225,9 @@ public class PopularMoviesActivity extends AppCompatActivity
     /**
      * If there were issues downloading data from TMDB, then hide the progress bar view and
      * display an error message to the user.
-     *
-     * @param status error status code.
      */
-    private void onDataLoadFailed(int status) {
-        Log.d(TAG, "onDataLoadFailed: status code" + status);
-        //TODO - Nice to have refined message.
+    private void onDataLoadFailed() {
+        Log.d(TAG, "onDataLoadFailed()");
         hideProgressBarAndShowErrorMessage();
     }
 
@@ -235,37 +249,5 @@ public class PopularMoviesActivity extends AppCompatActivity
      */
     public int getNumberOfItems() {
         return mMovieDataArrayList.size();
-    }
-
-    private class TMDAQueryTask extends AsyncTask<URL, Void, String> {
-        @Override
-        protected void onPreExecute() {
-            Log.d(TAG, "onPreExecute()");
-            showProgressBarAndHideErrorMessage();
-        }
-
-        @Override
-        protected String doInBackground(URL... params) {
-            URL url = params[0];
-            Log.d(TAG, "doInBackground: URL = " + url);
-            String results = null;
-            try {
-                results = NetworkUtils.getStringResponseFromHttpUrl(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return results;
-        }
-
-        @Override
-        protected void onPostExecute(String queryResult) {
-            if (queryResult != null) {
-                Log.d(TAG, "onPostExecute: queryResult.length() = " + queryResult.length());
-                mMovieDataArrayList.addAll(MovieDataHelper.getListfromJSONResponse(queryResult));
-                onDataLoadComplete();
-            } else {
-                onDataLoadFailed(0);
-            }
-        }
     }
 }

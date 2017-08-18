@@ -27,7 +27,8 @@ import java.net.URL;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MovieDetailActivity extends AppCompatActivity {
+public class MovieDetailActivity extends AppCompatActivity
+        implements FetchMovieDataTask.FetchFullMovieDataTaskListener {
 
     private static final String TAG = MovieDetailActivity.class.getSimpleName();
     private static final String PARCEL_KEY = "movie_data";
@@ -67,8 +68,8 @@ public class MovieDetailActivity extends AppCompatActivity {
             if (intent != null && intent.hasExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY)) {
                 String movieID = intent.getStringExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY);
                 URL url = NetworkUtils.buildURL(movieID, getString(R.string.tmdb_api_key));
-                QueryMovieDetailsTask queryTask = new QueryMovieDetailsTask();
-                queryTask.execute(url);
+                FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
+                fetchMovieDataTask.execute(url);
             }
         }
     }
@@ -123,37 +124,22 @@ public class MovieDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class QueryMovieDetailsTask extends AsyncTask<URL, Void, String> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            //show the progress bar.
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
+    @Override
+    public void onPreExecute() {
+        //show the progress bar.
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected String doInBackground(URL... params) {
-            URL url = params[0];
-            Log.d(TAG, "doInBackground: Querying URL = " + url);
-            String result = null;
-            try {
-                result = NetworkUtils.getStringResponseFromHttpUrl(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return result;
-        }
+    @Override
+    public void onFetchFailed() {
+        //hide the progress bar.
+        mProgressBar.setVisibility(View.INVISIBLE);
+        mErrorMessageTextView.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected void onPostExecute(String result) {
-            //hide the progress bar.
-            mProgressBar.setVisibility(View.INVISIBLE);
-            if (result != null) {
-                mMovieData = MovieDataHelper.getMovieDataFrom(result);
-                onDownloadSuccess();
-            } else {
-                mErrorMessageTextView.setVisibility(View.VISIBLE);
-            }
-        }
+    @Override
+    public void onFetchSuccess(MovieData movieData) {
+        mMovieData = movieData;
+        onDownloadSuccess();
     }
 }
