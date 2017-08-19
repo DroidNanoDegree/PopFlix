@@ -6,7 +6,6 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Display;
@@ -64,9 +63,6 @@ public class PopularMoviesActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popular_movies);
         ButterKnife.bind(this);
-
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(PopularMoviesActivity.this, NUMBER_OF_GRID_COLUMNS);
-        mMoviePostersRecyclerView.setLayoutManager(gridLayoutManager);
 
         mMoviePostersRecyclerView.setHasFixedSize(true);
 
