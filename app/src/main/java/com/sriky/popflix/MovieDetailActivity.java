@@ -101,7 +101,11 @@ public class MovieDetailActivity extends AppCompatActivity
 
         String relativePath = mMovieData.getPosterPath();
         Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, MovieDataHelper.getQueryThumbnailWidthPath());
-        Picasso.with(this).load(uri).into(mMoviePosterImageView);
+        Picasso.with(this)
+                .load(uri)
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.error)
+                .into(mMoviePosterImageView);
 
         mReleaseDateTextView.setText(mMovieData.getReleaseDate());
         mOverviewTextView.setText(mMovieData.getOverview());

@@ -77,7 +77,11 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
             PopularMoviesActivity popularMoviesActivity = (PopularMoviesActivity) mMovieThumbNailView.getContext();
             String relativePath = popularMoviesActivity.getImageRelativePathAtIndex(listIndex);
             Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, MovieDataHelper.getQueryThumbnailWidthPath());
-            Picasso.with(popularMoviesActivity).load(uri).into(mMovieThumbNailView);
+            Picasso.with(popularMoviesActivity)
+                    .load(uri)
+                    .placeholder(R.drawable.loading)
+                    .error(R.drawable.error)
+                    .into(mMovieThumbNailView);
         }
 
         @Override
