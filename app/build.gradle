@@ -18,6 +18,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildTypes.each{
+        it.buildConfigField "String", 'TMDB_API_KEY', getMyApiKey("tmdb_api_key")
+    }
 }
 
 dependencies {
@@ -39,4 +42,11 @@ dependencies {
     //Butterknife
     compile 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+}
+
+//return a API key from a properties file.
+def getMyApiKey(String property){
+    Properties properties = new Properties()
+    properties.load(new FileInputStream("keys.properties"))
+    return "\"" + properties.getProperty(property) +"\""
 }

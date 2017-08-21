@@ -159,7 +159,7 @@ public class PopularMoviesActivity extends AppCompatActivity
     private void downloadMovieDataInBackground() {
         Log.d(TAG, "downloadMovieDataInBackground()");
         FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
-        fetchMovieDataTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
+        fetchMovieDataTask.execute(NetworkUtils.buildURL(mSortingOrder, MovieDataHelper.TMDB_API_KEY));
     }
 
     /**

@@ -67,7 +67,7 @@ public class MovieDetailActivity extends AppCompatActivity
             Intent intent = getIntent();
             if (intent != null && intent.hasExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY)) {
                 String movieID = intent.getStringExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY);
-                URL url = NetworkUtils.buildURL(movieID, getString(R.string.tmdb_api_key));
+                URL url = NetworkUtils.buildURL(movieID, MovieDataHelper.TMDB_API_KEY);
                 FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
                 fetchMovieDataTask.execute(url);
             }

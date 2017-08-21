@@ -2,6 +2,7 @@ package com.sriky.popflix.utilities;
 
 import android.util.Log;
 
+import com.sriky.popflix.BuildConfig;
 import com.sriky.popflix.MovieData;
 
 import org.json.JSONArray;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 public final class MovieDataHelper {
 
     public static final String MOVIE_ID_INTENT_EXTRA_KEY = "movie_id";
+    public static final String TMDB_API_KEY = BuildConfig.TMDB_API_KEY;
 
     private static final String TAG = MovieDataHelper.class.getSimpleName();
 
