@@ -6,6 +6,8 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
+import com.sriky.popflix.utilities.MovieDataHelper;
+
 /**
  * Custom RecyclerView to support auto-fix columns when items in the
  * {@link android.widget.GridLayout} have a custom width set.
@@ -37,6 +39,8 @@ public class AutofitRecyclerView extends RecyclerView {
             };
             TypedArray array = context.obtainStyledAttributes(attrs, attrsArray);
             columnWidth = array.getDimensionPixelSize(0, -1);
+            //pass the column width to set the query path for downloading thumbnails.
+            MovieDataHelper.setThumbnailQueryPath(columnWidth);
             array.recycle();
         }
 

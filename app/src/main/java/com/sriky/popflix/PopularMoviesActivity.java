@@ -37,8 +37,6 @@ public class PopularMoviesActivity extends AppCompatActivity
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
-    //number of columns in the grid.
-    private static final int NUMBER_OF_GRID_COLUMNS = 4;
     //key for saving and retrieving data from savedInstanceState.
     private static final String MOVIE_DATA_LIST_KEY = "movie_data_list";
 
@@ -69,8 +67,6 @@ public class PopularMoviesActivity extends AppCompatActivity
         mMovieDataArrayList = new ArrayList<>();
 
         showProgressBarAndHideErrorMessage();
-
-        setupQueryThumbnailWidthPath();
 
         setSortingOrderFromSharedPreferences();
 
@@ -164,18 +160,6 @@ public class PopularMoviesActivity extends AppCompatActivity
         Log.d(TAG, "downloadMovieDataInBackground()");
         FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
         fetchMovieDataTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
-    }
-
-    /**
-     * calculate the thumbnail width based on the display width of the device and
-     * by the number of grid columns.
-     */
-    private void setupQueryThumbnailWidthPath() {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int thumbnailWidth = size.x / NUMBER_OF_GRID_COLUMNS;
-        MovieDataHelper.setThumbnailQueryPath(thumbnailWidth);
     }
 
     /**

@@ -37,9 +37,9 @@ public final class MovieDataHelper {
      * Returns the closest possible width query path supported by TMDB.
      *
      * @param thumbnailWidth - desired width to display movie posters.
-     * @return query widthPath.
      */
     public static void setThumbnailQueryPath(int thumbnailWidth) {
+        Log.d(TAG, "setThumbnailQueryPath: thumbnailWidth = "+thumbnailWidth);
         if (thumbnailWidth <= 0) {
             Log.w(TAG, "setThumbnailQueryPath: thumbnailWidth = " + thumbnailWidth + " in incorrect, will use default w185!");
         }
