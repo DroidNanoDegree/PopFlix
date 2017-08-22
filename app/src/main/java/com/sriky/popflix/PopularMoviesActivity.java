@@ -3,11 +3,9 @@ package com.sriky.popflix;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Display;
@@ -22,21 +20,23 @@ import com.sriky.popflix.settings.SettingsActivity;
 import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Main Activity that is launched from the Launcher.
  * Responsible for querying TMDB's APIs and displaying movies in the specified order.
  */
 public class PopularMoviesActivity extends AppCompatActivity
-        implements SharedPreferences.OnSharedPreferenceChangeListener, PopularMoviesAdaptor.MoviePosterOnClickEventListener {
+        implements SharedPreferences.OnSharedPreferenceChangeListener,
+        PopularMoviesAdaptor.MoviePosterOnClickEventListener,
+        FetchMovieDataTask.FetchBasicMovieDataTaskListener {
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
-    //number of columns in the grid.
-    private static final int NUMBER_OF_GRID_COLUMNS = 4;
     //key for saving and retrieving data from savedInstanceState.
     private static final String MOVIE_DATA_LIST_KEY = "movie_data_list";
 
@@ -45,10 +45,10 @@ public class PopularMoviesActivity extends AppCompatActivity
      * most_popular and top_rated movies from the settings menu.
      */
     private PopularMoviesAdaptor mPopularMoviesAdaptor;
-    private RecyclerView mMoviePostersRecyclerView;
+    public @BindView(R.id.rv_posters) RecyclerView mMoviePostersRecyclerView;
 
-    private ProgressBar mProgressBar;
-    private TextView mErrorMessageTextView;
+    public @BindView(R.id.pb_popularMoviesActivity) ProgressBar mProgressBar;
+    public @BindView(R.id.tv_error_msg) TextView mErrorMessageTextView;
 
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList;
@@ -60,21 +60,13 @@ public class PopularMoviesActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popular_movies);
-
-        mMoviePostersRecyclerView = findViewById(R.id.rv_posters);
-        mProgressBar = findViewById(R.id.pb_popularMoviesActivity);
-        mErrorMessageTextView = findViewById(R.id.tv_error_msg);
-
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(PopularMoviesActivity.this, NUMBER_OF_GRID_COLUMNS);
-        mMoviePostersRecyclerView.setLayoutManager(gridLayoutManager);
+        ButterKnife.bind(this);
 
         mMoviePostersRecyclerView.setHasFixedSize(true);
 
         mMovieDataArrayList = new ArrayList<>();
 
         showProgressBarAndHideErrorMessage();
-
-        setupQueryThumbnailWidthPath();
 
         setSortingOrderFromSharedPreferences();
 
@@ -144,25 +136,30 @@ public class PopularMoviesActivity extends AppCompatActivity
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    @Override
+    public void onPreExecute() {
+        showProgressBarAndHideErrorMessage();
+    }
+
+    @Override
+    public void onFetchSuccess(List<MovieData> movieDataList) {
+        mMovieDataArrayList.addAll(movieDataList);
+        onDataLoadComplete();
+    }
+
+    @Override
+    public void onFetchFailed() {
+        hideProgressBarAndShowErrorMessage();
+        onDataLoadFailed();
+    }
+
     /**
      * Starts an AsyncTask to download data in the background.
      */
     private void downloadMovieDataInBackground() {
         Log.d(TAG, "downloadMovieDataInBackground()");
-        TMDAQueryTask tmdaQueryTask = new TMDAQueryTask();
-        tmdaQueryTask.execute(NetworkUtils.buildURL(mSortingOrder, getString(R.string.tmdb_api_key)));
-    }
-
-    /**
-     * calculate the thumbnail width based on the display width of the device and
-     * by the number of grid columns.
-     */
-    private void setupQueryThumbnailWidthPath() {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int thumbnailWidth = size.x / NUMBER_OF_GRID_COLUMNS;
-        MovieDataHelper.setThumbnailQueryPath(thumbnailWidth);
+        FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
+        fetchMovieDataTask.execute(NetworkUtils.buildURL(mSortingOrder, MovieDataHelper.TMDB_API_KEY));
     }
 
     /**
@@ -208,12 +205,9 @@ public class PopularMoviesActivity extends AppCompatActivity
     /**
      * If there were issues downloading data from TMDB, then hide the progress bar view and
      * display an error message to the user.
-     *
-     * @param status error status code.
      */
-    private void onDataLoadFailed(int status) {
-        Log.d(TAG, "onDataLoadFailed: status code" + status);
-        //TODO - Nice to have refined message.
+    private void onDataLoadFailed() {
+        Log.d(TAG, "onDataLoadFailed()");
         hideProgressBarAndShowErrorMessage();
     }
 
@@ -235,37 +229,5 @@ public class PopularMoviesActivity extends AppCompatActivity
      */
     public int getNumberOfItems() {
         return mMovieDataArrayList.size();
-    }
-
-    private class TMDAQueryTask extends AsyncTask<URL, Void, String> {
-        @Override
-        protected void onPreExecute() {
-            Log.d(TAG, "onPreExecute()");
-            showProgressBarAndHideErrorMessage();
-        }
-
-        @Override
-        protected String doInBackground(URL... params) {
-            URL url = params[0];
-            Log.d(TAG, "doInBackground: URL = " + url);
-            String results = null;
-            try {
-                results = NetworkUtils.getStringResponseFromHttpUrl(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return results;
-        }
-
-        @Override
-        protected void onPostExecute(String queryResult) {
-            if (queryResult != null) {
-                Log.d(TAG, "onPostExecute: queryResult.length() = " + queryResult.length());
-                mMovieDataArrayList.addAll(MovieDataHelper.getListfromJSONResponse(queryResult));
-                onDataLoadComplete();
-            } else {
-                onDataLoadFailed(0);
-            }
-        }
     }
 }

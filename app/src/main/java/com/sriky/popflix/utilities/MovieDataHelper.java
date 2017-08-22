@@ -2,6 +2,7 @@ package com.sriky.popflix.utilities;
 
 import android.util.Log;
 
+import com.sriky.popflix.BuildConfig;
 import com.sriky.popflix.MovieData;
 
 import org.json.JSONArray;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 public final class MovieDataHelper {
 
     public static final String MOVIE_ID_INTENT_EXTRA_KEY = "movie_id";
+    public static final String TMDB_API_KEY = BuildConfig.TMDB_API_KEY;
 
     private static final String TAG = MovieDataHelper.class.getSimpleName();
 
@@ -37,9 +39,9 @@ public final class MovieDataHelper {
      * Returns the closest possible width query path supported by TMDB.
      *
      * @param thumbnailWidth - desired width to display movie posters.
-     * @return query widthPath.
      */
     public static void setThumbnailQueryPath(int thumbnailWidth) {
+        Log.d(TAG, "setThumbnailQueryPath: thumbnailWidth = "+thumbnailWidth);
         if (thumbnailWidth <= 0) {
             Log.w(TAG, "setThumbnailQueryPath: thumbnailWidth = " + thumbnailWidth + " in incorrect, will use default w185!");
         }

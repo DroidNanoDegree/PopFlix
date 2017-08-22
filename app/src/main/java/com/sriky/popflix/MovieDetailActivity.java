@@ -24,19 +24,23 @@ import com.sriky.popflix.utilities.NetworkUtils;
 import java.io.IOException;
 import java.net.URL;
 
-public class MovieDetailActivity extends AppCompatActivity {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class MovieDetailActivity extends AppCompatActivity
+        implements FetchMovieDataTask.FetchFullMovieDataTaskListener {
 
     private static final String TAG = MovieDetailActivity.class.getSimpleName();
     private static final String PARCEL_KEY = "movie_data";
 
-    private ProgressBar mProgressBar;
-    private TextView mErrorMessageTextView;
+    public @BindView(R.id.pb_details_activity) ProgressBar mProgressBar;
+    public @BindView(R.id.tv_details_activity_error_msg) TextView mErrorMessageTextView;
 
-    private ImageView mMoviePosterImageView;
-    private TextView mMovieTitleTextView;
-    private TextView mReleaseDateTextView;
-    private TextView mOverviewTextView;
-    private RatingBar mRatingsBar;
+    public @BindView(R.id.iv_details_thumbnail) ImageView mMoviePosterImageView;
+    public @BindView(R.id.tv_movie_title) TextView mMovieTitleTextView;
+    public @BindView(R.id.tv_release_date) TextView mReleaseDateTextView;
+    public @BindView(R.id.tv_overview) TextView mOverviewTextView;
+    public @BindView(R.id.rb_ratings) RatingBar mRatingsBar;
 
     private MovieData mMovieData;
 
@@ -45,16 +49,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
+        ButterKnife.bind(this);
 
-        mProgressBar = findViewById(R.id.pb_details_activity);
-        mErrorMessageTextView = findViewById(R.id.tv_details_activity_error_msg);
         mErrorMessageTextView.setText(getString(R.string.data_download_error));
-
-        mMoviePosterImageView = findViewById(R.id.iv_details_thumbnail);
-        mMovieTitleTextView = findViewById(R.id.tv_movie_title);
-        mReleaseDateTextView =  findViewById(R.id.tv_release_date);
-        mOverviewTextView =  findViewById(R.id.tv_overview);
-        mRatingsBar = findViewById(R.id.rb_ratings);
 
         setMoviePosterImageHeight();
 
@@ -70,9 +67,9 @@ public class MovieDetailActivity extends AppCompatActivity {
             Intent intent = getIntent();
             if (intent != null && intent.hasExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY)) {
                 String movieID = intent.getStringExtra(MovieDataHelper.MOVIE_ID_INTENT_EXTRA_KEY);
-                URL url = NetworkUtils.buildURL(movieID, getString(R.string.tmdb_api_key));
-                QueryMovieDetailsTask queryTask = new QueryMovieDetailsTask();
-                queryTask.execute(url);
+                URL url = NetworkUtils.buildURL(movieID, MovieDataHelper.TMDB_API_KEY);
+                FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
+                fetchMovieDataTask.execute(url);
             }
         }
     }
@@ -104,7 +101,11 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         String relativePath = mMovieData.getPosterPath();
         Uri uri = NetworkUtils.getURLForImageWithRelativePathAndSize(relativePath, MovieDataHelper.getQueryThumbnailWidthPath());
-        Picasso.with(this).load(uri).into(mMoviePosterImageView);
+        Picasso.with(this)
+                .load(uri)
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.error)
+                .into(mMoviePosterImageView);
 
         mReleaseDateTextView.setText(mMovieData.getReleaseDate());
         mOverviewTextView.setText(mMovieData.getOverview());
@@ -127,37 +128,22 @@ public class MovieDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class QueryMovieDetailsTask extends AsyncTask<URL, Void, String> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            //show the progress bar.
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
+    @Override
+    public void onPreExecute() {
+        //show the progress bar.
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected String doInBackground(URL... params) {
-            URL url = params[0];
-            Log.d(TAG, "doInBackground: Querying URL = " + url);
-            String result = null;
-            try {
-                result = NetworkUtils.getStringResponseFromHttpUrl(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return result;
-        }
+    @Override
+    public void onFetchFailed() {
+        //hide the progress bar.
+        mProgressBar.setVisibility(View.INVISIBLE);
+        mErrorMessageTextView.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected void onPostExecute(String result) {
-            //hide the progress bar.
-            mProgressBar.setVisibility(View.INVISIBLE);
-            if (result != null) {
-                mMovieData = MovieDataHelper.getMovieDataFrom(result);
-                onDownloadSuccess();
-            } else {
-                mErrorMessageTextView.setVisibility(View.VISIBLE);
-            }
-        }
+    @Override
+    public void onFetchSuccess(MovieData movieData) {
+        mMovieData = movieData;
+        onDownloadSuccess();
     }
 }
