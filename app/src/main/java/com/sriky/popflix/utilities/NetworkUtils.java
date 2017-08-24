@@ -27,12 +27,10 @@ public final class NetworkUtils {
      * @return complete query Uri to TMDB.
      */
     public static Uri getURLForImageWithRelativePathAndSize(String encodedRelativePath, String imageWidthPath) {
-        Uri uri = Uri.parse(TMDA_IMAGE_BASE_URL).buildUpon()
+        return Uri.parse(TMDA_IMAGE_BASE_URL).buildUpon()
                 .appendPath(imageWidthPath)
                 .appendEncodedPath(encodedRelativePath)
                 .build();
-
-        return uri;
     }
 
     /**
