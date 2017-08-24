@@ -19,6 +19,13 @@ public final class MovieDataHelper {
     public static final String MOVIE_ID_INTENT_EXTRA_KEY = "movie_id";
     public static final String TMDB_API_KEY = BuildConfig.TMDB_API_KEY;
 
+    //async task loader IDs.
+    public static final int BASIC_MOVIE_DATA_LOADER_ID = 100;
+    public static final int DETAIL_MOVIE_DATA_LOADER_ID = BASIC_MOVIE_DATA_LOADER_ID + 1;
+
+    //URL keys for sending and retrieving urls with the "FetchMovieDataTaskLoader".
+    public static final String FETCH_MOVIE_DATA_URL_KEY = "fetch_movie_data_url";
+
     private static final String TAG = MovieDataHelper.class.getSimpleName();
 
     //TMDB query - json keys.
@@ -41,7 +48,7 @@ public final class MovieDataHelper {
      * @param thumbnailWidth - desired width to display movie posters.
      */
     public static void setThumbnailQueryPath(int thumbnailWidth) {
-        Log.d(TAG, "setThumbnailQueryPath: thumbnailWidth = "+thumbnailWidth);
+        Log.d(TAG, "setThumbnailQueryPath: thumbnailWidth = " + thumbnailWidth);
         if (thumbnailWidth <= 0) {
             Log.w(TAG, "setThumbnailQueryPath: thumbnailWidth = " + thumbnailWidth + " in incorrect, will use default w185!");
         }
@@ -75,13 +82,13 @@ public final class MovieDataHelper {
      * for a particular movie's details.
      *
      * @param queryResult movie details response from TMDB API for a particular movie.
-     * @return
+     * @return MovieData object from response JSON string.
      */
     public static MovieData getMovieDataFrom(String queryResult) {
         MovieData movieData = new MovieData();
         try {
             //validate the response from the server.
-            if(isResponseValid(queryResult)) {
+            if (isResponseValid(queryResult)) {
                 JSONObject movieDetails = new JSONObject(queryResult);
                 movieData.setPosterPath(movieDetails.getString(JSON_KEY_MOVIE_POSTER_PATH));
                 movieData.setOverview(movieDetails.getString(JSON_KEY_MOVIE_OVERVIEW));
@@ -107,7 +114,7 @@ public final class MovieDataHelper {
         ArrayList<MovieData> movieDataList = new ArrayList<>();
         try {
             //validate the response from the server.
-            if(isResponseValid(queryResult)) {
+            if (isResponseValid(queryResult)) {
                 JSONObject moviesData = new JSONObject(queryResult);
                 JSONArray jsonArrayResults = moviesData.getJSONArray(JSON_KEY_ARRAY_RESULTS);
                 if (jsonArrayResults != null) {
@@ -128,17 +135,18 @@ public final class MovieDataHelper {
 
     /**
      * Validates the response from the TMDB server.
+     *
      * @param response Query response String.
      * @return TRUE if there were no errors contained in the response.
-     * @throws JSONException
+     * @throws JSONException when the JSON is malformed.
      */
     private static boolean isResponseValid(String response) throws JSONException {
-        if((response.contains(JSON_KEY_STATUS_CODE)) ||
-                (response.contains(JSON_KEY_STATUS_MESSAGE))){
+        if ((response.contains(JSON_KEY_STATUS_CODE)) ||
+                (response.contains(JSON_KEY_STATUS_MESSAGE))) {
             JSONObject responseObject = new JSONObject(response);
             String statusCode = responseObject.getString(JSON_KEY_STATUS_CODE);
             String statusMsg = responseObject.getString(JSON_KEY_STATUS_MESSAGE);
-            Log.e(TAG, "isResponseValid: Bad Response from server, where status code = "+statusCode+", status message = "+statusMsg);
+            Log.e(TAG, "isResponseValid: Bad Response from server, where status code = " + statusCode + ", status message = " + statusMsg);
             return false;
         }
         return true;

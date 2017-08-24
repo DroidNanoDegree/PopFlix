@@ -2,13 +2,13 @@ package com.sriky.popflix;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,7 +21,6 @@ import com.sriky.popflix.utilities.MovieDataHelper;
 import com.sriky.popflix.utilities.NetworkUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,7 +32,8 @@ import butterknife.ButterKnife;
 public class PopularMoviesActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener,
         PopularMoviesAdaptor.MoviePosterOnClickEventListener,
-        FetchMovieDataTask.FetchBasicMovieDataTaskListener {
+        LoaderManager.LoaderCallbacks<String>,
+        FetchMovieDataTaskLoader.FetchMovieDataTaskListener {
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
@@ -41,14 +41,17 @@ public class PopularMoviesActivity extends AppCompatActivity
     private static final String MOVIE_DATA_LIST_KEY = "movie_data_list";
 
     /*
-     * Handles to the Adaptor and the RecyclerView to aid in reset the list when user toggles btw
+     * Handle to the RecyclerView to aid in reset the list when user toggles btw
      * most_popular and top_rated movies from the settings menu.
      */
-    private PopularMoviesAdaptor mPopularMoviesAdaptor;
-    public @BindView(R.id.rv_posters) RecyclerView mMoviePostersRecyclerView;
+    @BindView(R.id.rv_posters)
+    RecyclerView mMoviePostersRecyclerView;
 
-    public @BindView(R.id.pb_popularMoviesActivity) ProgressBar mProgressBar;
-    public @BindView(R.id.tv_error_msg) TextView mErrorMessageTextView;
+    @BindView(R.id.pb_popularMoviesActivity)
+    ProgressBar mProgressBar;
+
+    @BindView(R.id.tv_error_msg)
+    TextView mErrorMessageTextView;
 
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList;
@@ -70,23 +73,11 @@ public class PopularMoviesActivity extends AppCompatActivity
 
         setSortingOrderFromSharedPreferences();
 
-        //if saved data exists, then use the movie data that was already downloaded.
-        if (savedInstanceState != null && savedInstanceState.containsKey(MOVIE_DATA_LIST_KEY)) {
-            Log.d(TAG, "onCreate: loading data from savedInstanceState()");
-            mMovieDataArrayList = savedInstanceState.getParcelableArrayList(MOVIE_DATA_LIST_KEY);
-            onDataLoadComplete();
-        } else {
-            Log.d(TAG, "onCreate: movie data must be downloaded!");
-            //trigger the async task to download movie data.
-            downloadMovieDataInBackground();
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState()");
-        outState.putParcelableArrayList(MOVIE_DATA_LIST_KEY, mMovieDataArrayList);
-        super.onSaveInstanceState(outState);
+        //trigger the asynctaskloader to download movie data.
+        //The following call will initialize a new loader if one doesn't exist.
+        //If an old loader exist and has loaded the data, then onLoadFinished() will be triggered.
+        getSupportLoaderManager().initLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
+                getBundleForLoader(), PopularMoviesActivity.this);
     }
 
     @Override
@@ -112,7 +103,8 @@ public class PopularMoviesActivity extends AppCompatActivity
             mSortingOrder = sharedPreferences.getString(key, getString(R.string.default_sort_order));
             Log.d(TAG, "onSharedPreferenceChanged: mSortingOrder = " + mSortingOrder);
             mMovieDataArrayList.clear();
-            downloadMovieDataInBackground();
+            getSupportLoaderManager().restartLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
+                    getBundleForLoader(), PopularMoviesActivity.this);
         }
     }
 
@@ -138,28 +130,43 @@ public class PopularMoviesActivity extends AppCompatActivity
 
     @Override
     public void onPreExecute() {
+        Log.d(TAG, "onPreExecute: ()");
         showProgressBarAndHideErrorMessage();
     }
 
+
     @Override
-    public void onFetchSuccess(List<MovieData> movieDataList) {
-        mMovieDataArrayList.addAll(movieDataList);
-        onDataLoadComplete();
+    public Loader<String> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader: id = "+id);
+        return new FetchMovieDataTaskLoader(this, args);
     }
 
     @Override
-    public void onFetchFailed() {
-        hideProgressBarAndShowErrorMessage();
-        onDataLoadFailed();
+    public void onLoadFinished(Loader<String> loader, String data) {
+        if (data != null) {
+            Log.d(TAG, "onLoadFinished: data.length() = " + data.length());
+            mMovieDataArrayList.addAll(MovieDataHelper.getListfromJSONResponse(data));
+            onDataLoadComplete();
+        } else {
+            onDataLoadFailed();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<String> loader) {
+
     }
 
     /**
-     * Starts an AsyncTask to download data in the background.
+     * Generates a bundle with the query URL.
+     * @return Bundle with query URL.
      */
-    private void downloadMovieDataInBackground() {
-        Log.d(TAG, "downloadMovieDataInBackground()");
-        FetchMovieDataTask fetchMovieDataTask = new FetchMovieDataTask(this);
-        fetchMovieDataTask.execute(NetworkUtils.buildURL(mSortingOrder, MovieDataHelper.TMDB_API_KEY));
+    private Bundle getBundleForLoader() {
+        Bundle bundleForLoader = new Bundle();
+        bundleForLoader.putString(MovieDataHelper.FETCH_MOVIE_DATA_URL_KEY,
+                NetworkUtils.buildURL(mSortingOrder, MovieDataHelper.TMDB_API_KEY).toString());
+
+        return bundleForLoader;
     }
 
     /**
@@ -198,8 +205,7 @@ public class PopularMoviesActivity extends AppCompatActivity
     private void onDataLoadComplete() {
         Log.d(TAG, "onDataLoadComplete()");
         mProgressBar.setVisibility(View.INVISIBLE);//hide the progress bar.
-        mPopularMoviesAdaptor = new PopularMoviesAdaptor(getNumberOfItems(), this);
-        mMoviePostersRecyclerView.setAdapter(mPopularMoviesAdaptor);
+        mMoviePostersRecyclerView.setAdapter(new PopularMoviesAdaptor(getNumberOfItems(), this));
     }
 
     /**
@@ -216,7 +222,7 @@ public class PopularMoviesActivity extends AppCompatActivity
      *
      * @param index of the image.
      * @return relative path.
-     * @throws ArrayIndexOutOfBoundsException
+     * @throws ArrayIndexOutOfBoundsException when the index is out of bounds.
      */
     public String getImageRelativePathAtIndex(int index) throws ArrayIndexOutOfBoundsException {
         return mMovieDataArrayList.get(index).getPosterPath();

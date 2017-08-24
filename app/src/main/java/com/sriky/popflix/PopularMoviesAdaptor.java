@@ -19,7 +19,7 @@ import butterknife.ButterKnife;
  * Adaptor for the PopularMoviesActivity's grid RecyclerView.
  */
 
-public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdaptor.ImageViewHolder> {
+class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdaptor.ImageViewHolder> {
 
     private static final String TAG = PopularMoviesAdaptor.class.getSimpleName();
 
@@ -28,7 +28,7 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
 
     private MoviePosterOnClickEventListener PopularMoviesAdaptorOnClickListener;
 
-    public PopularMoviesAdaptor(int numberOfItems, MoviePosterOnClickEventListener moviePosterOnClickEventListener) {
+    PopularMoviesAdaptor(int numberOfItems, MoviePosterOnClickEventListener moviePosterOnClickEventListener) {
         Log.d(TAG, "PopularMoviesAdaptor: numberOfItems = " + numberOfItems);
         mNumberOfItems = numberOfItems;
         PopularMoviesAdaptorOnClickListener = moviePosterOnClickEventListener;
@@ -39,8 +39,7 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View view = layoutInflater.inflate(R.layout.popularmovies_list_item, parent, false);
 
-        ImageViewHolder imageViewHolder = new ImageViewHolder(view);
-        return imageViewHolder;
+        return new ImageViewHolder(view);
     }
 
     @Override
@@ -60,9 +59,10 @@ public class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdap
     class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         //will display the image poster/thumbnail.
-        public @BindView(R.id.iv_movie_thumbnail) ImageView mMovieThumbNailView;
+        @BindView(R.id.iv_movie_thumbnail)
+        ImageView mMovieThumbNailView;
 
-        public ImageViewHolder(View itemView) {
+        ImageViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             mMovieThumbNailView.setOnClickListener(this);
