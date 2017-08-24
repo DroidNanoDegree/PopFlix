@@ -59,6 +59,9 @@ public class PopularMoviesActivity extends AppCompatActivity
     //query parameter for sorting ordering.
     private String mSortingOrder;
 
+    //bool to keep track of change in preferences to display sort order for the movies.
+    private boolean mDisplaySortingOrderChanged;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +81,17 @@ public class PopularMoviesActivity extends AppCompatActivity
         //If an old loader exist and has loaded the data, then onLoadFinished() will be triggered.
         getSupportLoaderManager().initLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
                 getBundleForLoader(), PopularMoviesActivity.this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(mDisplaySortingOrderChanged){
+            mMovieDataArrayList.clear();
+            getSupportLoaderManager().restartLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
+                    getBundleForLoader(), PopularMoviesActivity.this);
+            mDisplaySortingOrderChanged = false;
+        }
     }
 
     @Override
@@ -102,9 +116,7 @@ public class PopularMoviesActivity extends AppCompatActivity
         if (key.equals(getString(R.string.sort_order_key))) {
             mSortingOrder = sharedPreferences.getString(key, getString(R.string.default_sort_order));
             Log.d(TAG, "onSharedPreferenceChanged: mSortingOrder = " + mSortingOrder);
-            mMovieDataArrayList.clear();
-            getSupportLoaderManager().restartLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
-                    getBundleForLoader(), PopularMoviesActivity.this);
+            mDisplaySortingOrderChanged = true;
         }
     }
 
