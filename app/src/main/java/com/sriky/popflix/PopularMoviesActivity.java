@@ -37,9 +37,6 @@ public class PopularMoviesActivity extends AppCompatActivity
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
-    //key for saving and retrieving data from savedInstanceState.
-    private static final String MOVIE_DATA_LIST_KEY = "movie_data_list";
-
     /*
      * Handle to the RecyclerView to aid in reset the list when user toggles btw
      * most_popular and top_rated movies from the settings menu.
@@ -52,6 +49,9 @@ public class PopularMoviesActivity extends AppCompatActivity
 
     @BindView(R.id.tv_error_msg)
     TextView mErrorMessageTextView;
+
+    //handle to the adaptor instance.
+    private PopularMoviesAdaptor mPopularMoviesAdaptor;
 
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList;
@@ -68,9 +68,12 @@ public class PopularMoviesActivity extends AppCompatActivity
         setContentView(R.layout.activity_popular_movies);
         ButterKnife.bind(this);
 
+        mMovieDataArrayList = new ArrayList<>();
+
         mMoviePostersRecyclerView.setHasFixedSize(true);
 
-        mMovieDataArrayList = new ArrayList<>();
+        mPopularMoviesAdaptor = new PopularMoviesAdaptor(getNumberOfItems(), this);
+        mMoviePostersRecyclerView.setAdapter(mPopularMoviesAdaptor);
 
         showProgressBarAndHideErrorMessage();
 
@@ -217,7 +220,7 @@ public class PopularMoviesActivity extends AppCompatActivity
     private void onDataLoadComplete() {
         Log.d(TAG, "onDataLoadComplete()");
         mProgressBar.setVisibility(View.INVISIBLE);//hide the progress bar.
-        mMoviePostersRecyclerView.setAdapter(new PopularMoviesAdaptor(getNumberOfItems(), this));
+        mPopularMoviesAdaptor.updateItemsCount(getNumberOfItems());
     }
 
     /**

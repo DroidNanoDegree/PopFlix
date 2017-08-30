@@ -34,6 +34,11 @@ class PopularMoviesAdaptor extends RecyclerView.Adapter<PopularMoviesAdaptor.Ima
         PopularMoviesAdaptorOnClickListener = moviePosterOnClickEventListener;
     }
 
+    public void updateItemsCount(int newItemsCount){
+        mNumberOfItems = newItemsCount;
+        notifyDataSetChanged();
+    }
+
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
