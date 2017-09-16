@@ -1,6 +1,6 @@
 Hello there,
 
-The project in this folder contains the implementation for *Stage 1:  Main Discovery Screen, A Details View, and Settings* part of the [Android Developer Nanodegree](https://www.udacity.com/course/android-developer-nanodegree-by-google--nd801).
+The project in this folder contains the implementation for *Stage 1: Popular Movies* project part of the [Android Developer Nanodegree](https://www.udacity.com/course/android-developer-nanodegree-by-google--nd801).
 
 As per the requirement for the project, the following items are completed:
 
