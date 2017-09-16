@@ -37,9 +37,6 @@ public class PopularMoviesActivity extends AppCompatActivity
 
     private static final String TAG = PopularMoviesActivity.class.getSimpleName();
 
-    //key for saving and retrieving data from savedInstanceState.
-    private static final String MOVIE_DATA_LIST_KEY = "movie_data_list";
-
     /*
      * Handle to the RecyclerView to aid in reset the list when user toggles btw
      * most_popular and top_rated movies from the settings menu.
@@ -53,11 +50,17 @@ public class PopularMoviesActivity extends AppCompatActivity
     @BindView(R.id.tv_error_msg)
     TextView mErrorMessageTextView;
 
+    //handle to the adaptor instance.
+    private PopularMoviesAdaptor mPopularMoviesAdaptor;
+
     //list to hold the downloaded movie data.
     private ArrayList<MovieData> mMovieDataArrayList;
 
     //query parameter for sorting ordering.
     private String mSortingOrder;
+
+    //bool to keep track of change in preferences to display sort order for the movies.
+    private boolean mDisplaySortingOrderChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +68,12 @@ public class PopularMoviesActivity extends AppCompatActivity
         setContentView(R.layout.activity_popular_movies);
         ButterKnife.bind(this);
 
+        mMovieDataArrayList = new ArrayList<>();
+
         mMoviePostersRecyclerView.setHasFixedSize(true);
 
-        mMovieDataArrayList = new ArrayList<>();
+        mPopularMoviesAdaptor = new PopularMoviesAdaptor(getNumberOfItems(), this);
+        mMoviePostersRecyclerView.setAdapter(mPopularMoviesAdaptor);
 
         showProgressBarAndHideErrorMessage();
 
@@ -78,6 +84,17 @@ public class PopularMoviesActivity extends AppCompatActivity
         //If an old loader exist and has loaded the data, then onLoadFinished() will be triggered.
         getSupportLoaderManager().initLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
                 getBundleForLoader(), PopularMoviesActivity.this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(mDisplaySortingOrderChanged){
+            mMovieDataArrayList.clear();
+            getSupportLoaderManager().restartLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
+                    getBundleForLoader(), PopularMoviesActivity.this);
+            mDisplaySortingOrderChanged = false;
+        }
     }
 
     @Override
@@ -102,9 +119,7 @@ public class PopularMoviesActivity extends AppCompatActivity
         if (key.equals(getString(R.string.sort_order_key))) {
             mSortingOrder = sharedPreferences.getString(key, getString(R.string.default_sort_order));
             Log.d(TAG, "onSharedPreferenceChanged: mSortingOrder = " + mSortingOrder);
-            mMovieDataArrayList.clear();
-            getSupportLoaderManager().restartLoader(MovieDataHelper.BASIC_MOVIE_DATA_LOADER_ID,
-                    getBundleForLoader(), PopularMoviesActivity.this);
+            mDisplaySortingOrderChanged = true;
         }
     }
 
@@ -205,7 +220,7 @@ public class PopularMoviesActivity extends AppCompatActivity
     private void onDataLoadComplete() {
         Log.d(TAG, "onDataLoadComplete()");
         mProgressBar.setVisibility(View.INVISIBLE);//hide the progress bar.
-        mMoviePostersRecyclerView.setAdapter(new PopularMoviesAdaptor(getNumberOfItems(), this));
+        mPopularMoviesAdaptor.updateItemsCount(getNumberOfItems());
     }
 
     /**
